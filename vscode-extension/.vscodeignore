@@ -29,3 +29,12 @@ coverage/**
 ../README.md
 ../Research.md
 ../integration-test.js
+
+
+../MANUAL_TESTING.md
+
+../DEPLOYMENT_COMPLETE.md
+../GITHUB_SETUP.md
+../.gitignore
+../.git/index
+../.git

@@ -12,6 +12,8 @@ export class ProductivityTracker {
   private currentSession: UserSession | undefined;
 
   constructor(private context: vscode.ExtensionContext) {
+    console.log('🏗️ Initializing ProductivityTracker...');
+    
     this.authService = new AuthService(context);
     
     // Create status bar item
@@ -22,23 +24,30 @@ export class ProductivityTracker {
     this.statusBarItem.command = 'productivityTracker.showStats';
     this.context.subscriptions.push(this.statusBarItem);
     
+    console.log('📊 Status bar item created');
+    
     this.initialize();
   }
 
   private async initialize(): Promise<void> {
+    console.log('🔄 Initializing extension...');
+    
     // Show welcome message for first-time users
     await this.showWelcomeMessageIfFirstTime();
     
     // Check if user is already logged in
     const session = await this.authService.getStoredSession();
     if (session) {
+      console.log('👤 User session found, starting tracking...');
       await this.startTracking(session);
     } else {
+      console.log('🔒 No user session, showing login prompt...');
       this.updateStatusBar('Click to login', false);
       this.statusBarItem.command = 'productivityTracker.login';
     }
     
     this.statusBarItem.show();
+    console.log('✅ Status bar item is now visible');
   }
 
   private async showWelcomeMessageIfFirstTime(): Promise<void> {
@@ -150,17 +159,17 @@ export class ProductivityTracker {
   }
 
   private updateStatusBar(text: string, isTracking: boolean): void {
-    const icon = isTracking ? '$(pulse)' : '$(account)';
+    const icon = isTracking ? '$(graph)' : '$(sign-in)';
     this.statusBarItem.text = `${icon} ${text}`;
     this.statusBarItem.backgroundColor = isTracking 
-      ? undefined 
+      ? new vscode.ThemeColor('statusBarItem.prominentBackground')
       : new vscode.ThemeColor('statusBarItem.warningBackground');
     
     // Update tooltip with more information
     if (isTracking) {
-      this.statusBarItem.tooltip = 'Productivity Tracker: Active\nClick to view stats';
+      this.statusBarItem.tooltip = 'Productivity Tracker: Active - Tracking your coding activity\nClick to view stats';
     } else {
-      this.statusBarItem.tooltip = 'Productivity Tracker: Not logged in\nClick to login';
+      this.statusBarItem.tooltip = 'Productivity Tracker: Not logged in\nClick to login with GitHub';
     }
   }
 
@@ -261,23 +270,74 @@ export class ProductivityTracker {
 
 // Extension activation
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Productivity Tracker extension is now active');
+  console.log('🚀 Productivity Tracker extension is now active');
   
-  const tracker = new ProductivityTracker(context);
-  
-  // Register commands
-  const commands = [
-    vscode.commands.registerCommand('productivityTracker.login', () => tracker.login()),
-    vscode.commands.registerCommand('productivityTracker.logout', () => tracker.logout()),
-    vscode.commands.registerCommand('productivityTracker.showStats', () => tracker.showStats()),
-    vscode.commands.registerCommand('productivityTracker.openDashboard', () => tracker.openDashboard()),
-    vscode.commands.registerCommand('productivityTracker.toggleTracking', () => tracker.toggleTracking())
-  ];
-  
-  commands.forEach(cmd => context.subscriptions.push(cmd));
-  context.subscriptions.push(tracker);
+  try {
+    const tracker = new ProductivityTracker(context);
+    
+    // Register commands with error handling
+    const commands = [
+      vscode.commands.registerCommand('productivityTracker.login', async () => {
+        console.log('Command: productivityTracker.login executed');
+        try {
+          await tracker.login();
+        } catch (error) {
+          console.error('Login command error:', error);
+          vscode.window.showErrorMessage(`Login failed: ${error}`);
+        }
+      }),
+      vscode.commands.registerCommand('productivityTracker.logout', async () => {
+        console.log('Command: productivityTracker.logout executed');
+        try {
+          await tracker.logout();
+        } catch (error) {
+          console.error('Logout command error:', error);
+          vscode.window.showErrorMessage(`Logout failed: ${error}`);
+        }
+      }),
+      vscode.commands.registerCommand('productivityTracker.showStats', async () => {
+        console.log('Command: productivityTracker.showStats executed');
+        try {
+          await tracker.showStats();
+        } catch (error) {
+          console.error('Show stats command error:', error);
+          vscode.window.showErrorMessage(`Show stats failed: ${error}`);
+        }
+      }),
+      vscode.commands.registerCommand('productivityTracker.openDashboard', async () => {
+        console.log('Command: productivityTracker.openDashboard executed');
+        try {
+          await tracker.openDashboard();
+        } catch (error) {
+          console.error('Open dashboard command error:', error);
+          vscode.window.showErrorMessage(`Open dashboard failed: ${error}`);
+        }
+      }),
+      vscode.commands.registerCommand('productivityTracker.toggleTracking', async () => {
+        console.log('Command: productivityTracker.toggleTracking executed');
+        try {
+          await tracker.toggleTracking();
+        } catch (error) {
+          console.error('Toggle tracking command error:', error);
+          vscode.window.showErrorMessage(`Toggle tracking failed: ${error}`);
+        }
+      })
+    ];
+    
+    commands.forEach(cmd => context.subscriptions.push(cmd));
+    context.subscriptions.push(tracker);
+    
+    console.log('✅ All commands registered successfully');
+    
+    // Show a confirmation that the extension loaded
+    vscode.window.showInformationMessage('Productivity Tracker extension loaded successfully!');
+    
+  } catch (error) {
+    console.error('❌ Extension activation failed:', error);
+    vscode.window.showErrorMessage(`Productivity Tracker failed to activate: ${error}`);
+  }
 }
 
 export function deactivate() {
-  console.log('Productivity Tracker extension is now deactivated');
+  console.log('🛑 Productivity Tracker extension is now deactivated');
 }

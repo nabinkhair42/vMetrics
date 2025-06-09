@@ -6,7 +6,7 @@
   "publisher": "productivity-tracker",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nabinkhair42/vscode-productivity-tracker"
+    "url": "https://github.com/nabinkhair42/vstatus"
   },
   "engines": {
     "vscode": "^1.80.0"
@@ -51,6 +51,28 @@
         "icon": "$(record)"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "productivityTracker.login",
+          "when": "!productivityTracker.isLoggedIn"
+        },
+        {
+          "command": "productivityTracker.logout",
+          "when": "productivityTracker.isLoggedIn"
+        }
+      ]
+    },
+    "colors": [
+      {
+        "id": "productivityTracker.statusBarActive",
+        "description": "Status bar background when productivity tracking is active",
+        "defaults": {
+          "dark": "#0366d6",
+          "light": "#0366d6"
+        }
+      }
+    ],
     "configuration": {
       "title": "Productivity Tracker",
       "properties": {
@@ -73,33 +95,6 @@
           "type": "boolean",
           "default": true,
           "description": "Show productivity notifications"
-        }
-      }
-    },
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "productivityTracker.login",
-          "when": "!productivityTracker.isLoggedIn"
-        },
-        {
-          "command": "productivityTracker.logout",
-          "when": "productivityTracker.isLoggedIn"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Productivity Tracker",
-      "properties": {
-        "productivityTracker.serverUrl": {
-          "type": "string",
-          "default": "ws://localhost:3001",
-          "description": "Backend server URL"
-        },
-        "productivityTracker.idleTimeoutMinutes": {
-          "type": "number",
-          "default": 5,
-          "description": "Minutes of inactivity before considering user idle"
         }
       }
     }

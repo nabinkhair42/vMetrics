@@ -19,22 +19,6 @@ coverage/**
 .vscode-test/**
 **/*.spec.ts
 **/*.test.ts
-# Parent directory files
-../dashboard/**
-../server/**
-../node_modules/**
-../.env
-../package.json
-../package-lock.json
-../README.md
-../Research.md
-../integration-test.js
 
-
-../MANUAL_TESTING.md
-
-../DEPLOYMENT_COMPLETE.md
-../GITHUB_SETUP.md
-../.gitignore
-../.git/index
-../.git
+# Exclude everything from parent directory
+../**

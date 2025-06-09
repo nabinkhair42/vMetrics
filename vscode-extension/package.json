@@ -1,0 +1,129 @@
+{
+  "name": "vscode-productivity-tracker",
+  "displayName": "VSCode Productivity Tracker",
+  "description": "Track your coding productivity and wellbeing",
+  "version": "0.0.1",
+  "publisher": "productivity-tracker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nabinkhair42/vscode-productivity-tracker"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "productivityTracker.login",
+        "title": "Login with GitHub",
+        "category": "Productivity Tracker",
+        "icon": "$(account)"
+      },
+      {
+        "command": "productivityTracker.logout",
+        "title": "Logout",
+        "category": "Productivity Tracker",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "productivityTracker.showStats",
+        "title": "Show Productivity Stats",
+        "category": "Productivity Tracker",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "productivityTracker.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Productivity Tracker",
+        "icon": "$(browser)"
+      },
+      {
+        "command": "productivityTracker.toggleTracking",
+        "title": "Toggle Tracking",
+        "category": "Productivity Tracker",
+        "icon": "$(record)"
+      }
+    ],
+    "configuration": {
+      "title": "Productivity Tracker",
+      "properties": {
+        "productivityTracker.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:3001",
+          "description": "Server URL for productivity tracking"
+        },
+        "productivityTracker.idleTimeoutMinutes": {
+          "type": "number",
+          "default": 5,
+          "description": "Minutes of inactivity before considering idle"
+        },
+        "productivityTracker.trackFileTypes": {
+          "type": "array",
+          "default": ["typescript", "javascript", "python", "java", "csharp", "cpp", "go", "rust"],
+          "description": "File types to track for productivity"
+        },
+        "productivityTracker.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show productivity notifications"
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "productivityTracker.login",
+          "when": "!productivityTracker.isLoggedIn"
+        },
+        {
+          "command": "productivityTracker.logout",
+          "when": "productivityTracker.isLoggedIn"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Productivity Tracker",
+      "properties": {
+        "productivityTracker.serverUrl": {
+          "type": "string",
+          "default": "ws://localhost:3001",
+          "description": "Backend server URL"
+        },
+        "productivityTracker.idleTimeoutMinutes": {
+          "type": "number",
+          "default": 5,
+          "description": "Minutes of inactivity before considering user idle"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.80.0",
+    "@types/ws": "^8.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "uuid": "^9.0.1",
+    "ws": "^8.14.0"
+  }
+}

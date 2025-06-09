@@ -109,6 +109,7 @@ export class ProductivityTracker {
       this.activityTracker = new ActivityTracker(
         (event: ActivityEvent) => this.handleActivityEvent(event),
         machineId,
+        session.userId,
         config.idleTimeoutMinutes * 60 * 1000
       );
       
@@ -153,7 +154,7 @@ export class ProductivityTracker {
   private getConfiguration(): Config {
     const config = vscode.workspace.getConfiguration('productivityTracker');
     return {
-      serverUrl: config.get('serverUrl', 'ws://localhost:3001'),
+      serverUrl: config.get('serverUrl', 'http://localhost:3001'),
       idleTimeoutMinutes: config.get('idleTimeoutMinutes', 5)
     };
   }

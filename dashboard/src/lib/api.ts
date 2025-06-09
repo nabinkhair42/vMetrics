@@ -60,6 +60,22 @@ export const activityAPI = {
   getStats: async () => {
     const response = await apiClient.get('/api/activity/stats');
     return response.data;
+  },
+
+  // Enhanced API calls for comprehensive data
+  getUserStats: async () => {
+    const response = await apiClient.get('/api/activity/stats');
+    return response.data;
+  },
+
+  getTimeSeries: async (days: number = 7) => {
+    const response = await apiClient.get(`/api/activity/timeseries?days=${days}`);
+    return response.data;
+  },
+
+  getRecentActivity: async (limit: number = 10) => {
+    const response = await apiClient.get(`/api/activity/recent?limit=${limit}`);
+    return response.data;
   }
 };
 

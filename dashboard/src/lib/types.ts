@@ -1,3 +1,5 @@
+// Dashboard types that match the enhanced server-side data model
+
 export interface ActivityEvent {
   type: 'file_open' | 'file_close' | 'file_save' | 'file_edit' | 'text_change' | 'focus' | 'blur' | 'idle_start' | 'idle_end' | 'session_start' | 'session_end' | 'workspace_change';
   timestamp: number;
@@ -95,9 +97,36 @@ export interface LiveActivity {
   lastActivity: number;
 }
 
-export interface JwtPayload {
-  userId: string;
-  githubId: string;
-  email?: string;
-  username?: string;
+// Dashboard-specific interfaces
+export interface DashboardSummary {
+  todayMinutes: number;
+  todayFiles: number;
+  todayProjects: number;
+  activeProject?: string;
+  longestSession: number;
+  trends?: {
+    time: number;
+    files: number;
+    projects: number;
+  };
+}
+
+export interface ChartDataPoint {
+  date: string;
+  value: number;
+  label?: string;
+}
+
+export interface LanguageChartData {
+  name: string;
+  minutes: number;
+  percentage: number;
+  color: string;
+}
+
+export interface ProjectChartData {
+  name: string;
+  timeSpent: number;
+  percentage: number;
+  color: string;
 }

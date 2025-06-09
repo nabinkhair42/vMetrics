@@ -42,7 +42,7 @@ interface StatsOverviewProps {
     todayMinutes: number;
     todayFiles: number;
     todayProjects: number;
-    activeProject: string;
+    activeProject?: string;
     longestSession: number;
     trends?: {
       time: number;

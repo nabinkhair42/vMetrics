@@ -5,6 +5,36 @@ import { ActivityService } from '../services/ActivityService';
 const router = express.Router();
 const activityService = new ActivityService();
 
+// POST endpoint to receive activity events from VSCode extension
+router.post('/', authenticateToken as any, async (req: any, res: Response) => {
+  try {
+    const activityEvent = req.body;
+    
+    // Validate required fields
+    if (!activityEvent.type || !activityEvent.timestamp) {
+      return res.status(400).json({ error: 'Missing required fields: type, timestamp' });
+    }
+
+    // Add user ID from authenticated token
+    activityEvent.userId = req.user!.userId;
+    
+    console.log(`📊 Received activity event: ${activityEvent.type} from user ${req.user!.userId}`);
+    
+    // Save the activity event
+    await activityService.saveActivity(req.user!.userId, activityEvent);
+    
+    res.status(201).json({ success: true, message: 'Activity event saved' });
+  } catch (error) {
+    console.error('Error saving activity event:', error);
+    res.status(500).json({ error: 'Failed to save activity event' });
+  }
+});
+
+// Health check endpoint for VSCode extension connection testing
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: Date.now() });
+});
+
 // Get user stats
 router.get('/stats', authenticateToken as any, async (req: any, res: Response) => {
   try {
@@ -88,6 +118,18 @@ router.get('/timeseries', authenticateToken as any, async (req: any, res: Respon
   } catch (error) {
     console.error('Error getting timeseries data:', error);
     res.status(500).json({ error: 'Failed to get timeseries data' });
+  }
+});
+
+// Get recent activity
+router.get('/recent', authenticateToken as any, async (req: any, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const activities = await activityService.getRecentActivity(req.user!.userId, limit);
+    res.json(activities);
+  } catch (error) {
+    console.error('Error getting recent activity:', error);
+    res.status(500).json({ error: 'Failed to get recent activity' });
   }
 });
 

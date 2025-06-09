@@ -73,6 +73,16 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Health check endpoint for VSCode extension
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: Date.now(),
+    version: '1.0.0',
+    uptime: process.uptime()
+  });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/activity', activityRoutes);

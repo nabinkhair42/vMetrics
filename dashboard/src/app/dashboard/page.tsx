@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { activityAPI } from '@/lib/api';
+import type { UserStats, DashboardSummary } from '@/lib/types';
 import { StatsOverview } from '@/components/dashboard/StatsOverview';
 import { ActivityChart, ProjectChart } from '@/components/dashboard/ActivityChart';
 import { LanguageStats, RecentActivity } from '@/components/dashboard/LanguageStats';
@@ -12,18 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogOut, RefreshCw } from 'lucide-react';
 
 interface DashboardData {
-  summary: {
-    todayMinutes: number;
-    todayFiles: number;
-    todayProjects: number;
-    activeProject: string;
-    longestSession: number;
-    trends?: {
-      time: number;
-      files: number;
-      projects: number;
-    };
-  };
+  userStats: UserStats;
+  summary: DashboardSummary;
   timeSeries: Array<{
     time: string;
     minutes: number;
@@ -60,11 +51,12 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
-      const [summary, dailyStats, projects, languages] = await Promise.all([
-        activityAPI.getSummary('today'),
-        activityAPI.getDailyStats(7),
+      const [userStats, dailyStats, projects, languages, recentActivity] = await Promise.all([
+        activityAPI.getUserStats(),
+        activityAPI.getTimeSeries(7),
         activityAPI.getProjects(30),
-        activityAPI.getLanguages(30)
+        activityAPI.getLanguages(30),
+        activityAPI.getRecentActivity(10)
       ]);
 
       // Transform daily stats for chart
@@ -81,12 +73,27 @@ export default function Dashboard() {
         files: project.sessionCount || 0
       }));
 
+      // Create dashboard summary from user stats
+      const summary: DashboardSummary = {
+        todayMinutes: userStats.todayMinutes,
+        todayFiles: userStats.activeProjects.length,
+        todayProjects: userStats.activeProjects.length,
+        activeProject: userStats.currentProject,
+        longestSession: Math.round(userStats.averageSessionTime),
+        trends: {
+          time: userStats.todayMinutes > userStats.weeklyStats.averageDaily ? 1 : -1,
+          files: userStats.activeProjects.length > 3 ? 1 : -1,
+          projects: userStats.activeProjects.length
+        }
+      };
+
       const dashboardData: DashboardData = {
+        userStats,
         summary,
         timeSeries,
         projects: transformedProjects.slice(0, 5),
         languages: languages.slice(0, 5),
-        recentActivity: [] // TODO: Add recent activity endpoint
+        recentActivity: recentActivity || []
       };
 
       setData(dashboardData);

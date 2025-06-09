@@ -157,6 +157,94 @@ router.get('/verify', async (req, res) => {
   }
 });
 
+// VSCode Extension Authentication
+// This endpoint validates GitHub token from VSCode and returns our JWT
+router.post('/vscode-login', async (req, res) => {
+  try {
+    const { githubToken } = req.body;
+    
+    if (!githubToken) {
+      return res.status(400).json({ error: 'GitHub token is required' });
+    }
+
+    // Fetch user data from GitHub API using the provided token
+    const githubResponse = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'User-Agent': 'VSCode-Productivity-Tracker'
+      }
+    });
+
+    if (!githubResponse.ok) {
+      return res.status(401).json({ error: 'Invalid GitHub token' });
+    }
+
+    const githubUser: any = await githubResponse.json();
+    
+    // Fetch user email from GitHub API (emails might be private)
+    const emailResponse = await fetch('https://api.github.com/user/emails', {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'User-Agent': 'VSCode-Productivity-Tracker'
+      }
+    });
+
+    let email = githubUser.email;
+    if (!email && emailResponse.ok) {
+      const emails = await emailResponse.json() as any[];
+      const primaryEmail = emails.find((e: any) => e.primary) || emails[0];
+      email = primaryEmail?.email;
+    }
+
+    // Check if user exists in our database
+    let user = await User.findOne({ githubId: githubUser.id });
+    
+    if (user) {
+      // Update existing user with latest GitHub data
+      user.username = githubUser.login;
+      user.email = email;
+      user.avatarUrl = githubUser.avatar_url;
+      user.name = githubUser.name;
+      await user.save();
+    } else {
+      // Create new user
+      user = new User({
+        githubId: githubUser.id,
+        username: githubUser.login,
+        email: email,
+        avatarUrl: githubUser.avatar_url,
+        name: githubUser.name
+      });
+      await user.save();
+      console.log(`✅ New user created: ${user.username} (${user.email})`);
+    }
+
+    // Generate our JWT token
+    const token = generateToken({ 
+      userId: user._id.toString(),
+      githubId: user.githubId,
+      email: user.email,
+      username: user.username
+    });
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        githubId: user.githubId,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl
+      }
+    });
+
+  } catch (error) {
+    console.error('VSCode login error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+});
+
 // Logout
 router.post('/logout', (req, res) => {
   req.logout((err) => {

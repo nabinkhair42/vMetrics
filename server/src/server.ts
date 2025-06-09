@@ -73,6 +73,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/activity', activityRoutes);
+
 // Initialize services
 const activityService = new ActivityService();
 

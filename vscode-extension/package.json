@@ -109,16 +109,10 @@
   },
   "devDependencies": {
     "@types/node": "20.x",
-    "@types/uuid": "^10.0.0",
     "@types/vscode": "^1.80.0",
-    "@types/ws": "^8.5.0",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
     "eslint": "^8.47.0",
     "typescript": "^5.1.6"
-  },
-  "dependencies": {
-    "uuid": "^9.0.1",
-    "ws": "^8.14.0"
   }
 }

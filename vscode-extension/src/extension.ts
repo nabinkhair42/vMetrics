@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { AuthService } from './authService';
 import { ActivityTracker } from './activityTracker';
-import { WebSocketClient } from './webSocketClient';
+import { HttpClient } from './httpClient';
 import { ActivityEvent, UserSession, Config } from './types';
 
 export class ProductivityTracker {
   private authService: AuthService;
   private activityTracker: ActivityTracker | undefined;
-  private webSocketClient: WebSocketClient | undefined;
+  private httpClient: HttpClient | undefined;
   private statusBarItem: vscode.StatusBarItem;
   private currentSession: UserSession | undefined;
 
@@ -101,9 +101,9 @@ export class ProductivityTracker {
       // Get machine ID
       const machineId = await this.authService.getMachineId();
       
-      // Initialize WebSocket client
-      this.webSocketClient = new WebSocketClient(config, session);
-      await this.webSocketClient.connect();
+      // Initialize HTTP client
+      this.httpClient = new HttpClient(config, session);
+      await this.httpClient.connect();
       
       // Initialize activity tracker
       this.activityTracker = new ActivityTracker(
@@ -129,9 +129,9 @@ export class ProductivityTracker {
       this.activityTracker = undefined;
     }
     
-    if (this.webSocketClient) {
-      this.webSocketClient.disconnect();
-      this.webSocketClient = undefined;
+    if (this.httpClient) {
+      this.httpClient.disconnect();
+      this.httpClient = undefined;
     }
     
     this.currentSession = undefined;
@@ -139,8 +139,8 @@ export class ProductivityTracker {
   }
 
   private handleActivityEvent(event: ActivityEvent): void {
-    if (this.webSocketClient) {
-      this.webSocketClient.sendEvent(event);
+    if (this.httpClient) {
+      this.httpClient.sendEvent(event);
     }
     
     // Update status bar with current activity
@@ -174,7 +174,7 @@ export class ProductivityTracker {
   }
 
   async showStats(): Promise<void> {
-    if (this.webSocketClient && this.webSocketClient.isConnectedToServer()) {
+    if (this.httpClient && this.httpClient.isConnectedToServer()) {
       // Show quick stats in status bar or request detailed stats
       const action = await vscode.window.showQuickPick([
         {
@@ -203,7 +203,7 @@ export class ProductivityTracker {
             vscode.env.openExternal(vscode.Uri.parse('http://localhost:3000/dashboard'));
             break;
           case '📈 Quick Stats':
-            this.webSocketClient.requestStats();
+            this.httpClient.requestStats();
             break;
           case '⚙️ Settings':
             vscode.commands.executeCommand('workbench.action.openSettings', 'productivityTracker');

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authAPI } from '@/lib/api';
+import { useAuthStore } from '@/store';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface User {
   id: string;
@@ -28,6 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuthStatus();
   }, []);
 
+  // Sync with Zustand store whenever user state changes
+  useEffect(() => {
+    useAuthStore.getState().setUser(user);
+  }, [user]);
+
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('auth_token');
@@ -52,6 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authAPI.logout();
       setUser(null);
       localStorage.removeItem('auth_token');
+      // Also clear the Zustand store
+      useAuthStore.getState().logout();
     } catch (error) {
       console.error('Logout failed:', error);
     }

@@ -1,175 +1,322 @@
-import { ActivityChart } from '@/components/charts/ActivityChart';
-import { ProjectChart } from '@/components/charts/ProjectChart';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDailyStats, useLanguageStats, useProjectStats, useSelectedView, useUIStore } from '@/store';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Activity, BarChart3, Code, Target, TrendingUp } from 'lucide-react';
-import { ActivityHeatmap } from './ActivityHeatmap';
-import { LanguageStats } from './LanguageStats';
-import { RecentActivity } from './RecentActivity';
-import { EnhancedStatsOverview } from './StatsOverview';
+"use client"
 
-export function DashboardTabs() {
-  const selectedView = useSelectedView();
-  const dailyStats = useDailyStats();
-  const languageStats = useLanguageStats();
-  const projectStats = useProjectStats();
+import { ActivityChart } from "@/components/charts/ActivityChart"
+import { ProjectChart } from "@/components/charts/ProjectChart"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useDailyStats, useLanguageStats, useProjectStats, useSelectedView, useUIStore } from "@/store"
+import { AnimatePresence, motion } from "framer-motion"
+import { Activity, BarChart3, Code, Target, TrendingUp, Clock, FileCode } from "lucide-react"
+import { ActivityHeatmap } from "./ActivityHeatmap"
+import { LanguageStats } from "./LanguageStats"
+import { EnhancedStatsOverview } from "./StatsOverview"
+import { RecentActivity } from "./RecentActivity"
+
+// Animation variants for consistent motion
+const tabVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+}
+
+const transitionConfig = {
+  duration: 0.3,
+  ease: "easeInOut",
+}
+
+// Overview Tab Content
+function OverviewTab() {
+  const dailyStats = useDailyStats()
 
   return (
-    <Tabs 
-      value={selectedView} 
-      onValueChange={(value) => useUIStore.getState().setSelectedView(value as 'overview' | 'activity' | 'projects' | 'languages' | 'goals')} 
+    <motion.div
+      key="overview"
+      variants={tabVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={transitionConfig}
       className="space-y-6"
     >
-      <TabsList className="grid w-full grid-cols-5">
-        <TabsTrigger value="overview" className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          <span className="hidden sm:inline">Overview</span>
-        </TabsTrigger>
-        <TabsTrigger value="activity" className="flex items-center gap-2">
-          <Activity className="h-4 w-4" />
-          <span className="hidden sm:inline">Activity</span>
-        </TabsTrigger>
-        <TabsTrigger value="projects" className="flex items-center gap-2">
-          <Code className="h-4 w-4" />
-          <span className="hidden sm:inline">Projects</span>
-        </TabsTrigger>
-        <TabsTrigger value="languages" className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          <span className="hidden sm:inline">Languages</span>
-        </TabsTrigger>
-        <TabsTrigger value="goals" className="flex items-center gap-2">
-          <Target className="h-4 w-4" />
-          <span className="hidden sm:inline">Goals</span>
-        </TabsTrigger>
-      </TabsList>
+      {/* Stats Overview */}
+      <EnhancedStatsOverview />
 
-      <TabsContent value="overview" className="mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="overview"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <EnhancedStatsOverview />
-            <div className="grid gap-6 lg:grid-cols-7">
-              <ActivityChart data={dailyStats} title="Activity Trend" description="Your coding activity over time" className="col-span-4" />
-              <RecentActivity showLiveIndicator={true} />
-            </div>
-            <ActivityHeatmap data={dailyStats.map(d => ({ date: d.date, minutes: d.value, sessions: 1 }))} />
-          </motion.div>
-        </AnimatePresence>
-      </TabsContent>
+      {/* Activity and Recent Activity */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityChart
+            data={dailyStats}
+            title="Activity Trend"
+            description="Your coding activity over time"
+            className="h-full"
+          />
+        </div>
+        <div className="lg:col-span-1">
+          <RecentActivity className="h-full" />
+        </div>
+      </div>
 
-      <TabsContent value="activity" className="mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="activity"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ActivityChart data={dailyStats} type="line" title="Activity Timeline" description="Detailed view of your coding patterns" />
-              <RecentActivity />
-            </div>
-            <ActivityHeatmap data={dailyStats.map(d => ({ date: d.date, minutes: d.value, sessions: 1 }))} weeks={26} />
-          </motion.div>
-        </AnimatePresence>
-      </TabsContent>
+      {/* Activity Heatmap */}
+      <ActivityHeatmap data={dailyStats.map((d) => ({ date: d.date, minutes: d.value, sessions: 1 }))} />
+    </motion.div>
+  )
+}
 
-      <TabsContent value="projects" className="mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="projects"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <div className="grid gap-6 lg:grid-cols-7">
-              <ProjectChart data={projectStats} className="col-span-4" />
-              <RecentActivity />
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </TabsContent>
+// Activity Tab Content
+function ActivityTab() {
+  const dailyStats = useDailyStats()
 
-      <TabsContent value="languages" className="mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="languages"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            <div className="grid gap-6 lg:grid-cols-2">
-              <LanguageStats languages={languageStats} />
-              <Card>
-                <CardHeader>
-                  <CardTitle>Language Insights</CardTitle>
-                  <CardDescription>Your programming language usage patterns</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {languageStats.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="text-center p-6 bg-muted/50 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-2">Most Used Language</h3>
-                        <p className="text-2xl font-bold text-primary">{languageStats[0]?.name || 'N/A'}</p>
-                        <p className="text-sm text-muted-foreground">{languageStats[0]?.percentage.toFixed(1)}% of your coding time</p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-4 border rounded-lg">
-                          <p className="text-lg font-semibold">{languageStats.length}</p>
-                          <p className="text-sm text-muted-foreground">Languages Used</p>
-                        </div>
-                        <div className="text-center p-4 border rounded-lg">
-                          <p className="text-lg font-semibold">{Math.round(languageStats.reduce((sum, lang) => sum + lang.minutes, 0) / 60)}h</p>
-                          <p className="text-sm text-muted-foreground">Total Time</p>
-                        </div>
-                      </div>
+  return (
+    <motion.div
+      key="activity"
+      variants={tabVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={transitionConfig}
+      className="space-y-6"
+    >
+      {/* Activity Charts */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ActivityChart
+          data={dailyStats}
+          type="line"
+          title="Activity Timeline"
+          description="Detailed view of your coding patterns"
+        />
+        <RecentActivity />
+      </div>
+
+      {/* Extended Heatmap */}
+      <ActivityHeatmap data={dailyStats.map((d) => ({ date: d.date, minutes: d.value, sessions: 1 }))} weeks={26} />
+    </motion.div>
+  )
+}
+
+// Projects Tab Content
+function ProjectsTab() {
+  const projectStats = useProjectStats()
+
+  return (
+    <motion.div
+      key="projects"
+      variants={tabVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={transitionConfig}
+      className="space-y-6"
+    >
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ProjectChart data={projectStats} />
+        </div>
+        <div className="lg:col-span-1">
+          <RecentActivity />
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// Languages Tab Content
+function LanguagesTab() {
+  const languageStats = useLanguageStats()
+
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+  }
+
+  const totalTime = languageStats.reduce((sum, lang) => sum + lang.minutes, 0)
+  const topLanguage = languageStats.length > 0 ? languageStats[0] : null
+
+  return (
+    <motion.div
+      key="languages"
+      variants={tabVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={transitionConfig}
+      className="space-y-6"
+    >
+      <div className="grid gap-6 lg:grid-cols-2">
+        <LanguageStats languages={languageStats} />
+
+        <Card className="bg-card/50 border border-border">
+          <CardHeader className="pb-4 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <FileCode className="h-4 w-4 sm:h-5 sm:w-5" />
+              Language Insights
+            </CardTitle>
+            <CardDescription className="text-sm sm:text-base">Your programming language usage patterns</CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            {languageStats.length > 0 ? (
+              <div className="space-y-4 sm:space-y-6">
+                {/* Most Used Language Highlight */}
+                <div className="text-center p-4 sm:p-6 bg-muted/50 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Most Used Language</h3>
+                  <p className="text-xl sm:text-2xl font-bold text-primary mb-1">{topLanguage?.name || "N/A"}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {topLanguage?.percentage.toFixed(1)}% of your coding time
+                  </p>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="text-center p-3 sm:p-4 border rounded-lg bg-card/30">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Code className="h-4 w-4 text-primary" />
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Code className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No language data available</p>
+                    <p className="text-base sm:text-lg font-semibold">{languageStats.length}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Languages Used</p>
+                  </div>
+                  <div className="text-center p-3 sm:p-4 border rounded-lg bg-card/30">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Clock className="h-4 w-4 text-primary" />
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </TabsContent>
+                    <p className="text-base sm:text-lg font-semibold">{formatTime(totalTime)}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total Time</p>
+                  </div>
+                </div>
 
-      <TabsContent value="goals" className="mt-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key="goals"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="text-center py-12">
-              <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-xl font-semibold mb-2">Goals & Progress Tracking</h3>
-              <p className="text-muted-foreground mb-6">Set and track your coding goals to improve productivity</p>
-              <Badge variant="outline">Coming Soon</Badge>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </TabsContent>
-    </Tabs>
-  );
+                {/* Language Distribution */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Language Distribution</h4>
+                  <div className="space-y-2">
+                    {languageStats.slice(0, 3).map((lang, index) => (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: lang.color }} />
+                          <span>{lang.name}</span>
+                        </div>
+                        <span className="font-medium">{formatTime(lang.minutes)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                <Code className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                <p className="text-sm sm:text-base font-medium mb-1">No language data available</p>
+                <p className="text-xs sm:text-sm opacity-75">Start coding to see your language breakdown</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
+  )
+}
+
+// Goals Tab Content (Coming Soon)
+function GoalsTab() {
+  return (
+    <motion.div
+      key="goals"
+      variants={tabVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={transitionConfig}
+      className="flex items-center justify-center min-h-[400px]"
+    >
+      <div className="text-center py-12 max-w-md mx-auto">
+        <Target className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+        <h3 className="text-lg sm:text-xl font-semibold mb-2">Goals & Progress Tracking</h3>
+        <p className="text-sm sm:text-base text-muted-foreground mb-6">
+          Set and track your coding goals to improve productivity
+        </p>
+        <Badge variant="outline" className="text-xs sm:text-sm">
+          Coming Soon
+        </Badge>
+      </div>
+    </motion.div>
+  )
+}
+
+// Main Dashboard Tabs Component
+export function DashboardTabs() {
+  const selectedView = useSelectedView()
+
+  const handleTabChange = (value: string) => {
+    useUIStore.getState().setSelectedView(value as "overview" | "activity" | "projects" | "languages" | "goals")
+  }
+
+  return (
+    <div className="space-y-6">
+      <Tabs value={selectedView} onValueChange={handleTabChange} className="w-full">
+        {/* Responsive Tab Navigation */}
+        <div className="w-full overflow-x-auto">
+          <TabsList className="inline-flex h-10 sm:h-12 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-full sm:min-w-0 sm:w-auto">
+            <TabsTrigger
+              value="overview"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="activity"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="projects"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
+            >
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Projects</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="languages"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Languages</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="goals"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
+            >
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Goals</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Tab Content with Animations */}
+        <div className="mt-6">
+          <AnimatePresence mode="wait">
+            <TabsContent value="overview" className="mt-0">
+              <OverviewTab />
+            </TabsContent>
+
+            <TabsContent value="activity" className="mt-0">
+              <ActivityTab />
+            </TabsContent>
+
+            <TabsContent value="projects" className="mt-0">
+              <ProjectsTab />
+            </TabsContent>
+
+            <TabsContent value="languages" className="mt-0">
+              <LanguagesTab />
+            </TabsContent>
+
+            <TabsContent value="goals" className="mt-0">
+              <GoalsTab />
+            </TabsContent>
+          </AnimatePresence>
+        </div>
+      </Tabs>
+    </div>
+  )
 }

@@ -38,7 +38,7 @@ export function LanguageStats({ languages, className }: LanguageStatsProps) {
   })
 
   return (
-    <Card className={`${className} border-0 bg-card/50`}>
+    <Card className={`${className} border-0 `}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Code2 className="h-4 w-4 text-muted-foreground" />

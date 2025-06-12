@@ -1,7 +1,6 @@
-import { Activity, ActivitySession, DailySummary } from '../models/Activity';
-import { User } from '../models/User';
-import { ActivityEvent, UserStats } from '../types';
 import mongoose from 'mongoose';
+import { Activity, ActivitySession, DailySummary } from '../models/Activity';
+import { ActivityEvent, UserStats } from '../types';
 
 export class ActivityService {
   async saveActivity(userId: string, event: ActivityEvent): Promise<void> {
@@ -552,6 +551,12 @@ export class ActivityService {
       });
 
       return {
+        // VSCode extension compatibility fields
+        todayMinutes: Math.round(totalMinutes),
+        currentFile: activeSession?.currentFile || null,
+        activeProjects: Array.from(projectMap.keys()),
+        
+        // Dashboard fields
         summary: {
           totalMinutes: Math.round(totalMinutes),
           totalSessions,
@@ -590,6 +595,7 @@ export class ActivityService {
           sessions: summary.sessionsCount,
           productivity: summary.productivityScore
         })),
+        recentActivities: await this.getRecentActivity(userId, 20),
         currentActivity: activeSession ? {
           isActive: true,
           currentFile: activeSession.currentFile,

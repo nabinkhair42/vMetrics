@@ -104,7 +104,7 @@ export const activityAPI = {
   },
 
   getRecentActivity: async (limit: number = 10) => {
-    const response = await apiClient.get(`/api/activity/sessions/recent?limit=${limit}`);
+    const response = await apiClient.get(`/api/activity/activities/recent?limit=${limit}`);
     return response.data;
   }
 };

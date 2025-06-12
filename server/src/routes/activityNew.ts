@@ -188,6 +188,21 @@ router.get('/sessions/recent', authenticateToken as any, async (req: any, res: R
   }
 });
 
+// Get recent activities
+router.get('/activities/recent', authenticateToken as any, async (req: any, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const limit = parseInt(req.query.limit as string) || 20;
+    
+    const activities = await activityService.getRecentActivity(userId, limit);
+    
+    res.json(activities);
+  } catch (error) {
+    console.error('Recent activities error:', error);
+    res.status(500).json({ error: 'Failed to get recent activities' });
+  }
+});
+
 // Health check
 router.get('/health', (req, res) => {
   res.json({ 

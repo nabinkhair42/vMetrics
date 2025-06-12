@@ -140,14 +140,7 @@ export const useDashboardStore = create<DashboardStore>()(
               new Date(dashboardData.currentActivity.lastActivity).getTime() : Date.now()
           };
 
-          const recentActivity = dashboardData.recentSessions.map((session: { startTime: string; currentFile: string; currentProject: string; duration: number }) => ({
-            timestamp: session.startTime,
-            type: 'session' as const,
-            file: session.currentFile,
-            project: session.currentProject,
-            duration: session.duration * 60 * 1000, // Convert minutes to ms
-            language: 'unknown'
-          }));
+          const recentActivity = dashboardData.recentActivities || [];
 
           set({
             userStats,

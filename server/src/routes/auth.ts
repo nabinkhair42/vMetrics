@@ -40,6 +40,8 @@ passport.use(new GitHubStrategy({
   }
 }));
 
+// For serverless, we don't need session serialization
+// These are kept for compatibility but won't be used
 passport.serializeUser((user: any, done) => {
   done(null, user._id);
 });
@@ -55,11 +57,17 @@ passport.deserializeUser(async (id: string, done) => {
 
 // GitHub OAuth routes
 router.get('/github', 
-  passport.authenticate('github', { scope: ['user:email'] })
+  passport.authenticate('github', { 
+    scope: ['user:email'],
+    session: false // Disable session for serverless
+  })
 );
 
 router.get('/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login' }),
+  passport.authenticate('github', { 
+    failureRedirect: '/login',
+    session: false // Disable session for serverless
+  }),
   async (req, res) => {
     try {
       const user = req.user as IUser;
@@ -245,14 +253,11 @@ router.post('/vscode-login', async (req, res) => {
   }
 });
 
-// Logout
+// Logout (for serverless, just return success since we use JWT)
 router.post('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Logout failed' });
-    }
-    res.json({ message: 'Logged out successfully' });
-  });
+  // In a JWT-based auth system, logout is handled client-side
+  // by removing the token from localStorage
+  res.json({ message: 'Logged out successfully' });
 });
 
 export default router;

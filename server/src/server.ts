@@ -5,16 +5,16 @@ dotenv.config();
 import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
+import passport from 'passport';
 import corsMiddleware from './config/cors';
-
-import * as RootHealth from "./routes/health-root";
 
 // Import configurations and services
 import connectDB from './config/database';
 
-// Import routes
-import activityNewRoutes from './routes/activityNew';
+// Import individual route modules
 import authRoutes from './routes/auth';
+import activityNewRoutes from './routes/activityNew';
+import * as RootHealth from './routes/health-root';
 
 const app: express.Application = express();
 
@@ -50,9 +50,17 @@ app.use(compression());
 // CORS configuration
 app.use(corsMiddleware);
 
+
+
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Passport middleware (required for GitHub OAuth)
+app.use(passport.initialize());
+// Note: We don't use passport.session() for serverless compatibility
+
+
 
 // Middleware to ensure database connection before handling requests
 app.use(async (req, res, next) => {
@@ -65,21 +73,25 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Health check endpoint for VSCode extension
+// Health check endpoint (should be before other routes)
 app.use('/health', RootHealth.HealthRoot);
 
-// Root endpoint for VSCode extension
-app.use('/', RootHealth.RootRoute);
-
-// Routes
-app.use('/api/auth', authRoutes);
-
-app.use('/api/activity', activityNewRoutes); 
-
+// Authentication routes - matches API expectations (before root route)
 app.use('/auth', authRoutes);
 
-// 404 handler
+// Activity routes - mount under /api/activity to match frontend API calls
+app.use('/api/activity', activityNewRoutes);
+
+// Legacy auth routes for compatibility (if needed)
+app.use('/api/auth', authRoutes);
+
+// Root endpoint (should be after specific routes)
+app.get('/', RootHealth.RootRoute);
+
+// 404 handler for unmatched routes
 app.use('*', RootHealth.NotFoundRoute);
+
+
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

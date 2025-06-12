@@ -5,7 +5,7 @@ interface UIState {
   isLoading: boolean;
   error: string | null;
   selectedTimeRange: 'today' | 'week' | 'month';
-  selectedView: 'overview' | 'projects' | 'languages' | 'activity' | 'goals';
+  selectedView: 'overview' | 'projects' | 'languages' | 'activity';
 }
 
 interface UIActions {
@@ -13,7 +13,7 @@ interface UIActions {
   setError: (error: string | null) => void;
   clearError: () => void;
   setSelectedTimeRange: (range: 'today' | 'week' | 'month') => void;
-  setSelectedView: (view: 'overview' | 'projects' | 'languages' | 'activity' | 'goals') => void;
+  setSelectedView: (view: 'overview' | 'projects' | 'languages' | 'activity') => void;
 }
 
 type UIStore = UIState & UIActions;

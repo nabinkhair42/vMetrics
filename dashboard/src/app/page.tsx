@@ -127,7 +127,7 @@ export default function Home() {
               <div>
                 <h3 className="font-semibold mb-2">Start Coding</h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Code normally - we'll automatically track your activity in the background
+                  Code normally - we&apos;ll automatically track your activity in the background
                 </p>
               </div>
             </div>

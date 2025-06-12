@@ -33,7 +33,7 @@ export interface ActivityEvent {
     editor?: string;
     theme?: string;
     gitBranch?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | null | undefined;
   };
 }
 

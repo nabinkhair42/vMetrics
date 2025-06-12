@@ -7,8 +7,8 @@ import { useRecentActivity } from "@/store"
 
 
 interface RecentActivity {
-  timestamp: string
-  type: "file_open" | "file_save" | "session_start" | "session_end"
+  timestamp: number | string
+  type: "file_open" | "file_save" | "session_start" | "session_end" | "file_close" | "file_edit" | "text_change" | "focus" | "blur" | "idle_start" | "idle_end" | "workspace_change"
   file?: string
   project?: string
   duration?: number
@@ -21,7 +21,7 @@ interface RecentActivityProps {
 export function RecentActivity({ className }: RecentActivityProps) {
   const activities = useRecentActivity()
 
-  const formatTime = (timestamp: string) => {
+  const formatTime = (timestamp: string | number) => {
     const date = new Date(timestamp)
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
@@ -42,6 +42,20 @@ export function RecentActivity({ className }: RecentActivityProps) {
         return <Play className="h-4 w-4 text-emerald-500" />
       case "session_end":
         return <Square className="h-4 w-4 text-red-500" />
+      case "file_close":
+        return <FileText className="h-4 w-4 text-gray-500" />
+      case "file_edit":
+      case "text_change":
+        return <FileText className="h-4 w-4 text-yellow-500" />
+      case "focus":
+        return <Activity className="h-4 w-4 text-green-400" />
+      case "blur":
+        return <Clock className="h-4 w-4 text-gray-400" />
+      case "idle_start":
+      case "idle_end":
+        return <Clock className="h-4 w-4 text-orange-500" />
+      case "workspace_change":
+        return <FolderOpen className="h-4 w-4 text-purple-500" />
       default:
         return <FileText className="h-4 w-4 text-muted-foreground" />
     }
@@ -50,13 +64,28 @@ export function RecentActivity({ className }: RecentActivityProps) {
   const getActivityText = (activity: RecentActivity) => {
     switch (activity.type) {
       case "file_open":
-        return `Opened ${activity.file}`
+        return `Opened ${activity.file || 'a file'}`
       case "file_save":
-        return `Saved ${activity.file}`
+        return `Saved ${activity.file || 'a file'}`
+      case "file_close":
+        return `Closed ${activity.file || 'a file'}`
+      case "file_edit":
+      case "text_change":
+        return `Edited ${activity.file || 'a file'}`
       case "session_start":
         return `Started coding session`
       case "session_end":
         return `Ended coding session`
+      case "focus":
+        return `Focused on editor`
+      case "blur":
+        return `Left editor`
+      case "idle_start":
+        return `Went idle`
+      case "idle_end":
+        return `Resumed activity`
+      case "workspace_change":
+        return `Changed workspace`
       default:
         return "Unknown activity"
     }
@@ -122,7 +151,7 @@ export function RecentActivity({ className }: RecentActivityProps) {
           <div className="space-y-3 sm:space-y-4 max-h-64 sm:max-h-80 overflow-y-auto">
             {activities.map((activity, index) => (
               <div
-                key={index}
+                key={`activity-${activity.timestamp}-${activity.type}-${index}`}
                 className="flex items-start gap-3 p-2 sm:p-3 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex-shrink-0 mt-0.5">{getActivityIcon(activity.type)}</div>

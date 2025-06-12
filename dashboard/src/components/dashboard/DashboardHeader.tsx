@@ -2,7 +2,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAutoRefresh, useRefreshInterval, useSettingsStore, useSelectedTimeRange, useUIStore, useUser } from '@/store';
-import { motion } from 'framer-motion';
 import { LogOut, RefreshCw } from 'lucide-react';
 
 interface DashboardHeaderProps {
@@ -31,12 +30,9 @@ export function DashboardHeader({ lastUpdated, onRefresh, onLogout, isLoading }:
   };
 
   return (
-    <motion.div
+    <div
       className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+      >
       <div>
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
           Welcome back, {user?.username}! 👋
@@ -66,7 +62,7 @@ export function DashboardHeader({ lastUpdated, onRefresh, onLogout, isLoading }:
           Logout
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

@@ -2,43 +2,21 @@
 
 import { ActivityChart } from "@/components/charts/ActivityChart"
 import { ProjectChart } from "@/components/charts/ProjectChart"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDailyStats, useLanguageStats, useProjectStats, useSelectedView, useUIStore } from "@/store"
-import { AnimatePresence, motion } from "framer-motion"
-import { Activity, BarChart3, Code, Target, TrendingUp, Clock, FileCode } from "lucide-react"
+import { Activity, BarChart3, Clock, Code, FileCode, TrendingUp } from "lucide-react"
 import { ActivityHeatmap } from "./ActivityHeatmap"
 import { LanguageStats } from "./LanguageStats"
-import { EnhancedStatsOverview } from "./StatsOverview"
 import { RecentActivity } from "./RecentActivity"
-
-// Animation variants for consistent motion
-const tabVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-}
-
-const transitionConfig = {
-  duration: 0.3,
-  ease: "easeInOut",
-}
+import { EnhancedStatsOverview } from "./StatsOverview"
 
 // Overview Tab Content
 function OverviewTab() {
   const dailyStats = useDailyStats()
 
   return (
-    <motion.div
-      key="overview"
-      variants={tabVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={transitionConfig}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Stats Overview */}
       <EnhancedStatsOverview />
 
@@ -59,7 +37,7 @@ function OverviewTab() {
 
       {/* Activity Heatmap */}
       <ActivityHeatmap data={dailyStats.map((d) => ({ date: d.date, minutes: d.value, sessions: 1 }))} />
-    </motion.div>
+    </div>
   )
 }
 
@@ -68,15 +46,7 @@ function ActivityTab() {
   const dailyStats = useDailyStats()
 
   return (
-    <motion.div
-      key="activity"
-      variants={tabVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={transitionConfig}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Activity Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         <ActivityChart
@@ -90,7 +60,7 @@ function ActivityTab() {
 
       {/* Extended Heatmap */}
       <ActivityHeatmap data={dailyStats.map((d) => ({ date: d.date, minutes: d.value, sessions: 1 }))} weeks={26} />
-    </motion.div>
+    </div>
   )
 }
 
@@ -99,15 +69,7 @@ function ProjectsTab() {
   const projectStats = useProjectStats()
 
   return (
-    <motion.div
-      key="projects"
-      variants={tabVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={transitionConfig}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ProjectChart data={projectStats} />
@@ -116,7 +78,7 @@ function ProjectsTab() {
           <RecentActivity />
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -134,15 +96,7 @@ function LanguagesTab() {
   const topLanguage = languageStats.length > 0 ? languageStats[0] : null
 
   return (
-    <motion.div
-      key="languages"
-      variants={tabVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={transitionConfig}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <LanguageStats languages={languageStats} />
 
@@ -188,8 +142,8 @@ function LanguagesTab() {
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">Language Distribution</h4>
                   <div className="space-y-2">
-                    {languageStats.slice(0, 3).map((lang, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
+                    {languageStats.slice(0, 3).map((lang) => (
+                      <div key={lang.name} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: lang.color }} />
                           <span>{lang.name}</span>
@@ -210,33 +164,7 @@ function LanguagesTab() {
           </CardContent>
         </Card>
       </div>
-    </motion.div>
-  )
-}
-
-// Goals Tab Content (Coming Soon)
-function GoalsTab() {
-  return (
-    <motion.div
-      key="goals"
-      variants={tabVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={transitionConfig}
-      className="flex items-center justify-center min-h-[400px]"
-    >
-      <div className="text-center py-12 max-w-md mx-auto">
-        <Target className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-        <h3 className="text-lg sm:text-xl font-semibold mb-2">Goals & Progress Tracking</h3>
-        <p className="text-sm sm:text-base text-muted-foreground mb-6">
-          Set and track your coding goals to improve productivity
-        </p>
-        <Badge variant="outline" className="text-xs sm:text-sm">
-          Coming Soon
-        </Badge>
-      </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -245,7 +173,7 @@ export function DashboardTabs() {
   const selectedView = useSelectedView()
 
   const handleTabChange = (value: string) => {
-    useUIStore.getState().setSelectedView(value as "overview" | "activity" | "projects" | "languages" | "goals")
+    useUIStore.getState().setSelectedView(value as "overview" | "activity" | "projects" | "languages")
   }
 
   return (
@@ -282,39 +210,26 @@ export function DashboardTabs() {
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Languages</span>
             </TabsTrigger>
-            <TabsTrigger
-              value="goals"
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm gap-2"
-            >
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Goals</span>
-            </TabsTrigger>
           </TabsList>
         </div>
 
-        {/* Tab Content with Animations */}
+        {/* Tab Content */}
         <div className="mt-6">
-          <AnimatePresence mode="wait">
-            <TabsContent value="overview" className="mt-0">
-              <OverviewTab />
-            </TabsContent>
+          <TabsContent value="overview" className="mt-0">
+            <OverviewTab />
+          </TabsContent>
 
-            <TabsContent value="activity" className="mt-0">
-              <ActivityTab />
-            </TabsContent>
+          <TabsContent value="activity" className="mt-0">
+            <ActivityTab />
+          </TabsContent>
 
-            <TabsContent value="projects" className="mt-0">
-              <ProjectsTab />
-            </TabsContent>
+          <TabsContent value="projects" className="mt-0">
+            <ProjectsTab />
+          </TabsContent>
 
-            <TabsContent value="languages" className="mt-0">
-              <LanguagesTab />
-            </TabsContent>
-
-            <TabsContent value="goals" className="mt-0">
-              <GoalsTab />
-            </TabsContent>
-          </AnimatePresence>
+          <TabsContent value="languages" className="mt-0">
+            <LanguagesTab />
+          </TabsContent>
         </div>
       </Tabs>
     </div>

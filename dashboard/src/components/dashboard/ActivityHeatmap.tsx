@@ -2,8 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Calendar } from "lucide-react"
 import { eachDayOfInterval, endOfWeek, format, isSameDay, isToday, startOfWeek, subWeeks } from "date-fns"
+import { Calendar } from "lucide-react"
 
 interface ActivityData {
   date: string
@@ -166,9 +166,8 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
               <div className="flex gap-1">
                 {weekData.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-1">
-                    {week.map((date, dayIndex) => {
+                    {week.map((date) => {
                       const intensity = getIntensity(date)
-                      const dayData = getDayData(date)
 
                       return (
                         <Tooltip key={date.toISOString()}>

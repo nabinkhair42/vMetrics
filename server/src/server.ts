@@ -20,7 +20,7 @@ import { ActivityEvent, UserStats } from './types';
 
 // Import routes
 import authRoutes from './routes/auth';
-import activityRoutes from './routes/activity';
+import activityNewRoutes from './routes/activityNew';
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -85,7 +85,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/activity', activityRoutes);
+app.use('/api/activity', activityNewRoutes); // Consolidated activity API (was v2, now main API)
 
 // Initialize services
 const activityService = new ActivityService();
@@ -195,7 +195,6 @@ wsApp.ws('/ws/activity', (ws: WebSocket, req: express.Request) => {
 
 // API Routes
 app.use('/auth', authRoutes);
-app.use('/api/activity', activityRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

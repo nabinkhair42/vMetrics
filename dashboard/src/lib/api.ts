@@ -37,44 +37,74 @@ export const authAPI = {
 
 // Activity API
 export const activityAPI = {
+  // Session-based API (using consolidated /api/activity endpoints)
+  getDashboardData: async (timeRange: string = 'today') => {
+    const response = await apiClient.get(`/api/activity/dashboard/${timeRange}`);
+    return response.data;
+  },
+
+  getTeamStatus: async () => {
+    const response = await apiClient.get('/api/activity/status/team');
+    return response.data;
+  },
+
+  getRecentSessions: async (limit: number = 10) => {
+    const response = await apiClient.get(`/api/activity/sessions/recent?limit=${limit}`);
+    return response.data;
+  },
+
+  sendStatusUpdate: async (status: { currentFile?: string; currentProject?: string; sessionId: string }) => {
+    const response = await apiClient.post('/api/activity/status', status);
+    return response.data;
+  },
+
+  endSession: async (sessionId: string) => {
+    const response = await apiClient.post('/api/activity/session/end', { sessionId });
+    return response.data;
+  },
+
+  // Legacy wrapper functions for backward compatibility (redirect to new endpoints)
   getSummary: async (range: 'today' | 'week' | 'month' = 'today') => {
-    const response = await apiClient.get(`/api/activity/summary?range=${range}`);
+    const response = await apiClient.get(`/api/activity/dashboard/${range}`);
     return response.data;
   },
   
   getDailyStats: async (days: number = 7) => {
-    const response = await apiClient.get(`/api/activity/daily?days=${days}`);
+    const timeRange = days <= 1 ? 'today' : days <= 7 ? 'week' : 'month';
+    const response = await apiClient.get(`/api/activity/dashboard/${timeRange}`);
     return response.data;
   },
   
   getProjects: async (days: number = 30) => {
-    const response = await apiClient.get(`/api/activity/projects?days=${days}`);
-    return response.data;
+    const timeRange = days <= 7 ? 'week' : 'month';
+    const response = await apiClient.get(`/api/activity/dashboard/${timeRange}`);
+    return response.data?.projects || [];
   },
   
   getLanguages: async (days: number = 30) => {
-    const response = await apiClient.get(`/api/activity/languages?days=${days}`);
-    return response.data;
+    const timeRange = days <= 7 ? 'week' : 'month';
+    const response = await apiClient.get(`/api/activity/dashboard/${timeRange}`);
+    return response.data?.languages || [];
   },
   
   getStats: async () => {
-    const response = await apiClient.get('/api/activity/stats');
+    const response = await apiClient.get('/api/activity/dashboard/today');
     return response.data;
   },
 
-  // Enhanced API calls for comprehensive data
   getUserStats: async () => {
-    const response = await apiClient.get('/api/activity/stats');
+    const response = await apiClient.get('/api/activity/dashboard/today');
     return response.data;
   },
 
   getTimeSeries: async (days: number = 7) => {
-    const response = await apiClient.get(`/api/activity/timeseries?days=${days}`);
-    return response.data;
+    const timeRange = days <= 1 ? 'today' : days <= 7 ? 'week' : 'month';
+    const response = await apiClient.get(`/api/activity/dashboard/${timeRange}`);
+    return response.data?.dailyTrend || [];
   },
 
   getRecentActivity: async (limit: number = 10) => {
-    const response = await apiClient.get(`/api/activity/recent?limit=${limit}`);
+    const response = await apiClient.get(`/api/activity/activities/recent?limit=${limit}`);
     return response.data;
   }
 };

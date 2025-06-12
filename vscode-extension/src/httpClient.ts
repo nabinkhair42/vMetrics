@@ -173,7 +173,7 @@ export class HttpClient {
 
   private async getStatsFromServer(): Promise<any> {
     return new Promise((resolve, reject) => {
-      const url = new URL(this.config.serverUrl + '/api/activity/stats');
+      const url = new URL(this.config.serverUrl + '/api/activity/dashboard/today');
       const requestModule = url.protocol === 'https:' ? https : http;
       
       const options = {
@@ -237,5 +237,81 @@ export class HttpClient {
 
   public isConnectedToServer(): boolean {
     return this.isConnected;
+  }
+
+  async sendSessionData(sessionData: any): Promise<void> {
+    if (!this.isConnected) {
+      throw new Error('Not connected to server');
+    }
+
+    return this.makeRequest('/api/activity/session', 'POST', sessionData);
+  }
+
+  async sendStatusUpdate(statusData: any): Promise<void> {
+    if (!this.isConnected) {
+      throw new Error('Not connected to server');
+    }
+
+    return this.makeRequest('/api/activity/status', 'POST', statusData);
+  }
+
+  async getDashboardData(timeRange: string = 'today'): Promise<any> {
+    if (!this.isConnected) {
+      throw new Error('Not connected to server');
+    }
+
+    return this.makeRequest(`/api/activity/dashboard/${timeRange}`, 'GET');
+  }
+
+  private async makeRequest(path: string, method: 'GET' | 'POST', data?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const url = new URL(this.config.serverUrl + path);
+      const requestModule = url.protocol === 'https:' ? https : http;
+      
+      const options = {
+        hostname: url.hostname,
+        port: url.port || (url.protocol === 'https:' ? 443 : 80),
+        path: url.pathname,
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.session.token}`
+        }
+      };
+
+      const req = requestModule.request(options, (res) => {
+        let responseData = '';
+        res.on('data', chunk => responseData += chunk);
+        res.on('end', () => {
+          if (res.statusCode === 200 || res.statusCode === 201) {
+            try {
+              resolve(responseData ? JSON.parse(responseData) : {});
+            } catch (error) {
+              console.error('JSON parse error:', error, 'Response:', responseData);
+              reject(new Error('Invalid JSON response'));
+            }
+          } else {
+            console.error(`HTTP ${res.statusCode} response:`, responseData);
+            reject(new Error(`HTTP ${res.statusCode}: ${responseData}`));
+          }
+        });
+      });
+
+      req.on('error', (error) => {
+        console.error('HTTP request error:', error);
+        reject(error);
+      });
+      
+      // Increase timeout to 30 seconds for session data uploads
+      req.setTimeout(30000, () => {
+        req.destroy();
+        reject(new Error('Request timeout (30s)'));
+      });
+
+      if (data) {
+        req.write(JSON.stringify(data));
+      }
+      req.end();
+    });
   }
 }

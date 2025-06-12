@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { authAPI } from '@/lib/api';
 import { useAuthStore, useDashboardStore, useAutoRefresh, useRefreshInterval, useSettingsStore, useIsLoading, useError, useSelectedTimeRange, useLastUpdated, useUIStore } from '@/store';
-import { motion } from 'framer-motion';
 import { RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
@@ -94,22 +93,17 @@ export default function Dashboard() {
   if (isLoading && !lastUpdated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="text-center">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-lg font-medium">Loading your productivity data...</p>
           <p className="text-sm text-muted-foreground">This may take a moment</p>
-        </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <motion.div
-      className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       <div className="container mx-auto p-6 space-y-6">
         <DashboardHeader
           lastUpdated={lastUpdated}
@@ -119,6 +113,6 @@ export default function Dashboard() {
         />
         <DashboardTabs />
       </div>
-    </motion.div>
+    </div>
   );
 }

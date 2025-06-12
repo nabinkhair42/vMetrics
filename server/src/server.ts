@@ -4,9 +4,7 @@ dotenv.config();
 
 import compression from 'compression';
 import express from 'express';
-import session from 'express-session';
 import helmet from 'helmet';
-import passport from 'passport';
 import corsMiddleware from './config/cors';
 
 import * as RootHealth from "./routes/health-root";
@@ -20,8 +18,30 @@ import authRoutes from './routes/auth';
 
 const app: express.Application = express();
 
-// Connect to database
-connectDB();
+// Global error handler for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+});
+
+// Database connection with error handling
+let isConnected = false;
+
+const ensureDbConnection = async () => {
+  if (!isConnected) {
+    try {
+      await connectDB();
+      isConnected = true;
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      throw error;
+    }
+  }
+};
 
 // Security middleware
 app.use(helmet());
@@ -34,20 +54,16 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'change-this-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+// Middleware to ensure database connection before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await ensureDbConnection();
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(503).json({ error: 'Database connection unavailable' });
   }
-}));
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+});
 
 // Health check endpoint for VSCode extension
 app.use('/health', RootHealth.HealthRoot);
@@ -68,27 +84,33 @@ app.use('*', RootHealth.NotFoundRoute);
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Server error:', err);
-  res.status(500).json({ 
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message 
+  
+  // Don't leak error details in production
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  
+  res.status(err.status || 500).json({ 
+    error: isDevelopment ? err.message : 'Internal server error',
+    ...(isDevelopment && { stack: err.stack })
   });
 });
 
-
-const PORT = process.env.PORT || 3001;
-
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
-  });
-});
-
+// For serverless deployment (Vercel), export the app
 export default app;
+
+// For local development, start the server
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 3001;
+
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL}`);
+  });
+
+  // Graceful shutdown for local development
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      console.log('Process terminated');
+    });
+  });
+}

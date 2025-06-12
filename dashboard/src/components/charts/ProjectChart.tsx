@@ -31,7 +31,7 @@ export function ProjectChart({ data, className }: ProjectChartProps) {
   }))
 
   return (
-    <Card className={`${className} flex flex-col bg-card/50 border border-border`}>
+    <Card className={`${className} flex flex-col border border-border`}>
       <CardHeader className="pb-4 sm:pb-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Code className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -73,7 +73,7 @@ export function ProjectChart({ data, className }: ProjectChartProps) {
               {chartData.map((project) => (
                 <div
                   key={project.name}
-                  className="flex items-center justify-between p-3 sm:p-4 rounded-lg border bg-card/50 hover:bg-card/70 transition-colors"
+                  className="flex items-center justify-between p-3 sm:p-4 rounded-lg border transition-colors"
                 >
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                     <div

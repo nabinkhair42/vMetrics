@@ -124,7 +124,7 @@ export function ActivityChart({ data, type = "area", title = "Activity", descrip
   const maxValue = Math.max(...data.map((d) => d.value))
 
   return (
-    <Card className={`${className} flex flex-col bg-card/50 border border-border`}>
+    <Card className={`${className} flex flex-col  border border-border`}>
       <CardHeader className="pb-4 sm:pb-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           {getChartIcon()}

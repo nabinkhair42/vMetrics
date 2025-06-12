@@ -109,7 +109,7 @@ export function RecentActivity({ className }: RecentActivityProps) {
   const recentFiles = activities.filter((a) => a.type === "file_save").length
 
   return (
-    <Card className={`${className} flex flex-col bg-card/50 border border-border`}>
+    <Card className={`${className} flex flex-col border border-border`}>
       <CardHeader className="pb-4 sm:pb-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Activity className="h-4 w-4 sm:h-5 sm:w-5" />

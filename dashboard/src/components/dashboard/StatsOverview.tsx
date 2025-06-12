@@ -30,7 +30,7 @@ interface StatCardProps {
 
 function StatCard({ title, value, description, icon, trend, className }: StatCardProps) {
   return (
-    <Card className={`${className} group hover:shadow-sm transition-all duration-200 border-0 bg-card/50`}>
+    <Card className={`${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -72,7 +72,7 @@ function StatsSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={`stat-${i}`} className="border-0 bg-card/50">
+          <Card key={`stat-${i}`} className="border-0 ">
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-20" />
             </CardHeader>
@@ -86,7 +86,7 @@ function StatsSkeleton() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[...Array(2)].map((_, i) => (
-          <Card key={`section-${i}`} className="border-0 bg-card/50">
+          <Card key={`section-${i}`} className="border-0 ">
             <CardHeader>
               <Skeleton className="h-5 w-32" />
             </CardHeader>
@@ -185,7 +185,7 @@ export function EnhancedStatsOverview() {
       {/* Detailed Analytics */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Session Analytics */}
-        <Card className="border-0 bg-card/50">
+        <Card className="border-0 ">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Activity className="h-4 w-4 text-muted-foreground" />
@@ -236,7 +236,7 @@ export function EnhancedStatsOverview() {
         </Card>
 
         {/* Development Stats */}
-        <Card className="border-0 bg-card/50">
+        <Card className="border-0 ">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Code className="h-4 w-4 text-muted-foreground" />

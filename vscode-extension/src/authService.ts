@@ -48,7 +48,7 @@ export class AuthService {
       const http = require('http');
       
       const postData = JSON.stringify({ githubToken });
-      const url = new URL('http://localhost:3001/auth/vscode-login');
+      const url = new URL('https://api-vstatus.vercel.app/auth/vscode-login');
       const requestModule = url.protocol === 'https:' ? https : http;
       
       const options = {

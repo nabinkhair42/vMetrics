@@ -87,7 +87,7 @@ export class ProductivityTracker {
       if (action === 'Get Started') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('http://localhost:3000'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app'));
       }
       
       this.context.globalState.update('hasShownWelcome', true);
@@ -356,7 +356,7 @@ export class ProductivityTracker {
     // Check for environment variables first (for development/deployment flexibility)
     // These can be set in terminal before launching VS Code or in system environment
     const serverUrl = process.env.PRODUCTIVITY_SERVER_URL || 
-                     config.get('serverUrl', 'http://localhost:3001');
+                     config.get('serverUrl', 'https://api-vstatus.vercel.app');
     
     const idleTimeoutMinutes = parseInt(process.env.PRODUCTIVITY_IDLE_TIMEOUT || '') || 
                               config.get('idleTimeoutMinutes', 5);
@@ -420,7 +420,7 @@ export class ProductivityTracker {
       if (action) {
         switch (action.label) {
           case '📊 View Dashboard':
-            vscode.env.openExternal(vscode.Uri.parse('http://localhost:3000/dashboard'));
+            vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app/dashboard'));
             break;
           case '📈 Quick Stats':
             this.httpClient.requestStats();
@@ -445,13 +445,13 @@ export class ProductivityTracker {
       if (action === 'Login') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('http://localhost:3000'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app'));
       }
     }
   }
 
   async openDashboard(): Promise<void> {
-    const dashboardUrl = 'http://localhost:3000/dashboard';
+    const dashboardUrl = 'https://vstatus-two.vercel.app/dashboard';
     vscode.env.openExternal(vscode.Uri.parse(dashboardUrl));
     
     if (!this.currentSession) {

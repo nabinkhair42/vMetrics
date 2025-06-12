@@ -3,7 +3,7 @@
   "displayName": "VSCode Productivity Tracker",
   "description": "Track your coding productivity and wellbeing",
   "version": "0.0.1",
-  "publisher": "productivity-tracker",
+  "publisher": "nabinkhair",
   "repository": {
     "type": "git",
     "url": "https://github.com/nabinkhair42/vstatus"
@@ -78,7 +78,7 @@
       "properties": {
         "productivityTracker.serverUrl": {
           "type": "string",
-          "default": "http://localhost:3001",
+          "default": "https://api-vstatus.vercel.app",
           "description": "Server URL for productivity tracking"
         },
         "productivityTracker.idleTimeoutMinutes": {

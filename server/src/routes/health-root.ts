@@ -1,9 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
 
-const router = express.Router();
+// Create separate routers for each endpoint
+const healthRouter = express.Router();
+const rootRouter = express.Router();
+const notFoundRouter = express.Router();
 
-const HealthRoot = router.get("/", async (req, res) => {
+const HealthRoot = healthRouter.get("/", async (req, res) => {
   try {
     // Check database connection
     const dbStatus = mongoose.connection.readyState;
@@ -47,27 +50,25 @@ const HealthRoot = router.get("/", async (req, res) => {
 });
 
 // / Route for root path
-const RootRoute = router.get("/", (req, res) => {
+const RootRoute = rootRouter.get("/", (req, res) => {
   res.status(200).json({
     message: "Welcome to the VSCode Productivity Tracker API",
     version: "1.0.0",
     endpoints: {
       health: "/health",
-      root: "/root",
+      auth: "/auth",
+      activity: "/api/activity",
     },
   });
 });
 
-
 // Route Not Found 404 handler
-const NotFoundRoute = router.use((req, res) => {
+const NotFoundRoute = notFoundRouter.use((req: any, res: any) => {
   res.status(404).json({
     error: "Route not found",
     timestamp: Date.now(),
     version: "1.0.0",
   });
 });
-
-
 
 export { HealthRoot, RootRoute, NotFoundRoute };

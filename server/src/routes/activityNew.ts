@@ -203,13 +203,4 @@ router.get('/activities/recent', authenticateToken as any, async (req: any, res:
   }
 });
 
-// Health check
-router.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: Date.now(),
-    version: 'v2-sessions'
-  });
-});
-
 export default router;

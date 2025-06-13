@@ -307,6 +307,7 @@ export class ActivityService {
 
   async getRecentActivity(userId: string, limit: number = 10): Promise<any[]> {
     try {
+      // First try to get recent individual activities
       const activities = await Activity.find({
         userId: new mongoose.Types.ObjectId(userId)
       })
@@ -314,14 +315,68 @@ export class ActivityService {
       .limit(limit)
       .select('type timestamp file fileName project duration language');
 
-      return activities.map(activity => ({
-        timestamp: activity.timestamp.toISOString(),
-        type: activity.type,
-        file: activity.fileName || activity.file,
-        project: activity.project,
-        duration: activity.duration,
-        language: activity.language
-      }));
+      if (activities.length > 0) {
+        return activities.map(activity => ({
+          timestamp: activity.timestamp.toISOString(),
+          type: activity.type,
+          file: activity.fileName || activity.file,
+          project: activity.project,
+          duration: activity.duration,
+          language: activity.language
+        }));
+      }
+
+      // Fallback to session-based activities if no individual activities found
+      const sessions = await ActivitySession.find({
+        userId: new mongoose.Types.ObjectId(userId)
+      })
+      .sort({ startTime: -1 })
+      .limit(Math.min(limit, 5))
+      .select('sessionId startTime endTime duration summary currentFile currentProject isActive');
+
+      const sessionActivities: any[] = [];
+      
+      sessions.forEach(session => {
+        // Add session start activity
+        sessionActivities.push({
+          timestamp: session.startTime.toISOString(),
+          type: 'session_start',
+          file: session.currentFile,
+          project: session.currentProject,
+          duration: null,
+          language: null
+        });
+
+        // Add a synthetic file activity if we have file info
+        if (session.currentFile) {
+          sessionActivities.push({
+            timestamp: new Date(session.startTime.getTime() + 1000).toISOString(), // 1 second after start
+            type: 'file_open',
+            file: session.currentFile,
+            project: session.currentProject,
+            duration: null,
+            language: null
+          });
+        }
+
+        // Add session end activity if session is completed
+        if (session.endTime && !session.isActive) {
+          sessionActivities.push({
+            timestamp: session.endTime.toISOString(),
+            type: 'session_end',
+            file: session.currentFile,
+            project: session.currentProject,
+            duration: Math.round(session.summary?.totalMinutes || 0), // in minutes
+            language: null
+          });
+        }
+      });
+
+      // Sort by timestamp and limit
+      return sessionActivities
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit);
+
     } catch (error) {
       console.error('Error getting recent activity:', error);
       throw error;

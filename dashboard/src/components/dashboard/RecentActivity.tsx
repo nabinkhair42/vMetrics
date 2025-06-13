@@ -108,6 +108,7 @@ export function RecentActivity({ className }: RecentActivityProps) {
   const recentSessions = activities.filter((a) => a.type === "session_end").length
   const recentFiles = activities.filter((a) => a.type === "file_save").length
 
+  console.log("Recent activities:", activities)
   return (
     <Card className={`${className} flex flex-col border border-border`}>
       <CardHeader className="pb-4 sm:pb-6">

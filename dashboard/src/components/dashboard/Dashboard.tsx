@@ -1,38 +1,34 @@
+import LoginCard from '@/components/auth/LoginCard';
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { UniversalLoading } from '@/components/UniversalLoading';
 import { authAPI } from '@/lib/api';
-import { useAuthStore, useDashboardStore, useAutoRefresh, useRefreshInterval, useSettingsStore, useIsLoading, useError, useSelectedTimeRange, useLastUpdated, useUIStore } from '@/store';
-import { RefreshCw } from 'lucide-react';
+import { useAuthStore, useDashboardStore, useError, useIsLoading, useSelectedTimeRange, useUIStore } from '@/store';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
   const { isAuthenticated } = useAuthStore();
-  const lastUpdated = useLastUpdated();
   const isLoading = useIsLoading();
   const error = useError();
   const selectedTimeRange = useSelectedTimeRange();
-  const autoRefresh = useAutoRefresh();
-  const refreshInterval = useRefreshInterval();
 
   // Hydrate stores on mount
   useEffect(() => {
     useAuthStore.persist.rehydrate();
-    useSettingsStore.persist.rehydrate();
   }, []);
 
-  // Auto-refresh functionality
+  // Auto-refresh every 30 seconds
   useEffect(() => {
-    if (autoRefresh && isAuthenticated) {
+    if (isAuthenticated) {
       const interval = setInterval(() => {
         useDashboardStore.getState().fetchDashboardData(selectedTimeRange);
-      }, refreshInterval * 1000);
+      }, 30000); // 30 seconds
       
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, refreshInterval, isAuthenticated, selectedTimeRange]);
+  }, [isAuthenticated, selectedTimeRange]);
 
   // Initial data load
   useEffect(() => {
@@ -75,40 +71,19 @@ export default function Dashboard() {
   };
 
   if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-96">
-          <CardHeader className="text-center">
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>Please login to view your productivity dashboard</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={() => window.location.href = '/'}>Go to Login</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <LoginCard />;
   }
 
-  if (isLoading && !lastUpdated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-lg font-medium">Loading your productivity data...</p>
-          <p className="text-sm text-muted-foreground">This may take a moment</p>
-        </div>
-      </div>
-    );
+  if (isLoading && !selectedTimeRange) {
+    return <UniversalLoading />;
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
       <div className="container mx-auto p-6 space-y-6">
-        <DashboardHeader
-          lastUpdated={lastUpdated}
+        <DashboardHeader onLogout={handleLogout} />
+        <DashboardFilters
           onRefresh={handleRefresh}
-          onLogout={handleLogout}
           isLoading={isLoading}
         />
         <DashboardTabs />
@@ -116,3 +91,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+

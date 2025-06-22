@@ -4,101 +4,102 @@ import { ActivityChart } from "@/components/charts/ActivityChart"
 import { ProjectChart } from "@/components/charts/ProjectChart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDailyStats, useLanguageStats, useProjectStats, useSelectedView, useUIStore } from "@/store"
-import { Activity, BarChart3, Code, FileCode } from "lucide-react"
+import { Activity, BarChart2, Code2, Layout } from "lucide-react"
 import { ActivityHeatmap } from "./ActivityHeatmap"
-import { LanguageStats } from "./LanguageStats"
+import { LanguageStats } from "@/components/dashboard/LanguageStats"
 import { RecentActivity } from "./RecentActivity"
-import { EnhancedStatsOverview } from "./StatsOverview"
+import { EnhancedStatsOverview } from "@/components/dashboard/StatsOverview"
 
-// Overview Tab Content
+// Overview Tab Content - Main dashboard with all key metrics
 function OverviewTab() {
   const dailyStats = useDailyStats()
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
       <EnhancedStatsOverview />
-      
-      {/* Activity and Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ActivityChart
-            data={dailyStats}
-            title="Activity Trend"
-            description="Your coding activity over time"
-            className="h-full"
-          />
-        </div>
-        <RecentActivity className="lg:col-span-1" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ActivityChart
+          data={dailyStats}
+          type="area"
+          title="Daily Activity"
+          description="Your coding activity over time"
+        />
+        <ActivityHeatmap 
+          data={dailyStats.map((d) => ({ 
+            date: d.date, 
+            minutes: d.value, 
+            sessions: 1 
+          }))} 
+        />
       </div>
-
-      {/* Activity Heatmap */}
-      <ActivityHeatmap 
-        data={dailyStats.map((d) => ({ 
-          date: d.date, 
-          minutes: d.value, 
-          sessions: 1 
-        }))} 
-      />
+      <RecentActivity />
     </div>
   )
 }
 
-// Activity Tab Content
+// Activity Tab Content - Detailed activity view
 function ActivityTab() {
   const dailyStats = useDailyStats()
 
   return (
     <div className="space-y-6">
-      {/* Activity Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ActivityChart
-          data={dailyStats}
-          type="line"
-          title="Activity Timeline"
-          description="Detailed coding patterns"
-        />
-        <RecentActivity />
+      <div className="flex flex-col gap-6">
+          <ActivityChart
+            data={dailyStats}
+            type="bar"
+            title="Daily Activity"
+            description="Your coding activity by day"
+          />
+         <RecentActivity  />
       </div>
-
-      {/* Extended Heatmap */}
-      <ActivityHeatmap 
-        data={dailyStats.map((d) => ({ 
-          date: d.date, 
-          minutes: d.value, 
-          sessions: 1 
-        }))} 
-        weeks={26} 
-      />
     </div>
   )
 }
 
-// Projects Tab Content
+// Projects Tab Content - Project-specific metrics
 function ProjectsTab() {
   const projectStats = useProjectStats()
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ProjectChart data={projectStats} />
-        </div>
-        <RecentActivity />
+      <div className="flex flex-col gap-6">
+        <ProjectChart data={projectStats} />
+        <ActivityChart
+          data={projectStats.map((p) => ({ 
+            date: new Date().toISOString(),
+            label: p.name, 
+            value: p.timeSpent,
+            color: p.color
+          }))}
+          type="bar"
+          title="Project Time Distribution"
+          description="Time spent on each project"
+          className="lg:col-span-1"
+        />
       </div>
     </div>
   )
 }
 
-// Languages Tab Content
+// Languages Tab Content - Language-specific metrics
 function LanguagesTab() {
   const languageStats = useLanguageStats()
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="flex flex-col gap-6">
         <LanguageStats languages={languageStats} />
-        <RecentActivity />
+        <ActivityChart
+          data={languageStats.map((l) => ({ 
+            date: new Date().toISOString(),
+            label: l.name, 
+            value: l.minutes
+          }))}
+          type="bar"
+          title="Language Time Distribution"
+          description="Time spent in each language"
+          className="lg:col-span-1"
+        />
       </div>
     </div>
   )
@@ -113,40 +114,41 @@ export function DashboardTabs() {
   }
 
   return (
-    <Tabs value={selectedView} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-4 bg-muted/50">
-        <TabsTrigger value="overview" className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          <span className="hidden sm:inline">Overview</span>
+    <Tabs defaultValue={selectedView} onValueChange={handleTabChange} className="w-full">
+      <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex gap-1 p-1 mb-4">
+        <TabsTrigger value="overview" className="sm:min-w-32">
+          <Layout className="h-4 w-4" />
+          Overview
         </TabsTrigger>
-        <TabsTrigger value="activity" className="flex items-center gap-2">
+        <TabsTrigger value="activity" className="sm:min-w-32">
           <Activity className="h-4 w-4" />
-          <span className="hidden sm:inline">Activity</span>
+          Activity
         </TabsTrigger>
-        <TabsTrigger value="projects" className="flex items-center gap-2">
-          <Code className="h-4 w-4" />
-          <span className="hidden sm:inline">Projects</span>
+        <TabsTrigger value="projects" className="sm:min-w-32">
+          <BarChart2 className="h-4 w-4" />
+          Projects
         </TabsTrigger>
-        <TabsTrigger value="languages" className="flex items-center gap-2">
-          <FileCode className="h-4 w-4" />
-          <span className="hidden sm:inline">Languages</span>
+        <TabsTrigger value="languages" className="sm:min-w-32">
+          <Code2 className="h-4 w-4" />
+          Languages
         </TabsTrigger>
       </TabsList>
 
-      <div className="mt-6">
-        <TabsContent value="overview" className="mt-0">
-          <OverviewTab />
-        </TabsContent>
-        <TabsContent value="activity" className="mt-0">
-          <ActivityTab />
-        </TabsContent>
-        <TabsContent value="projects" className="mt-0">
-          <ProjectsTab />
-        </TabsContent>
-        <TabsContent value="languages" className="mt-0">
-          <LanguagesTab />
-        </TabsContent>
-      </div>
+      <TabsContent value="overview" className="space-y-4 outline-none">
+        <OverviewTab />
+      </TabsContent>
+
+      <TabsContent value="activity" className="space-y-4 outline-none">
+        <ActivityTab />
+      </TabsContent>
+
+      <TabsContent value="projects" className="space-y-4 outline-none">
+        <ProjectsTab />
+      </TabsContent>
+
+      <TabsContent value="languages" className="space-y-4 outline-none">
+        <LanguagesTab />
+      </TabsContent>
     </Tabs>
   )
 }

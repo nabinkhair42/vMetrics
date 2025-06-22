@@ -1,21 +1,22 @@
 "use client"
 
-import type React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Code2 } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { LanguageIcon, getLanguageIcon } from "@/lib/language-icons"
-
-interface Language {
-  name: string
-  minutes: number
-  percentage: number
-}
+import type { LanguageChartData } from "@/lib/types"
+import { Code2 } from "lucide-react"
+import type { CSSProperties } from "react"
 
 interface LanguageStatsProps {
-  languages: Language[]
+  languages: LanguageChartData[]
   className?: string
+}
+
+// Custom type for our progress bar style properties
+interface CustomProgressStyle extends CSSProperties {
+  '--indicator-color': string;
 }
 
 export function LanguageStats({ languages, className }: LanguageStatsProps) {
@@ -33,12 +34,13 @@ export function LanguageStats({ languages, className }: LanguageStatsProps) {
     return {
       ...lang,
       displayName: languageInfo.displayName,
+      color: languageInfo.color,
       rank: index + 1
     }
   })
 
   return (
-    <Card className={`${className} border-0 `}>
+    <Card className={`${className} border border-border/50 bg-card/50 backdrop-blur-sm`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Code2 className="h-4 w-4 text-muted-foreground" />
@@ -46,37 +48,59 @@ export function LanguageStats({ languages, className }: LanguageStatsProps) {
         </CardTitle>
         {languages.length > 0 && (
           <div className="text-xs text-muted-foreground">
-            Total coding time: {formatTime(totalTime)} across {languages.length} languages
+            Total coding time: <span className="font-medium text-foreground">{formatTime(totalTime)}</span> across <span className="font-medium text-foreground">{languages.length}</span> languages
           </div>
         )}
       </CardHeader>
 
       <CardContent>
         {enhancedLanguages.length > 0 ? (
-          <div className="space-y-3">
+          <ScrollArea className="space-y-4 h-96">
             {enhancedLanguages.map((language) => (
-              <div key={language.name} className="space-y-2">
+              <div key={language.name} className="space-y-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background/80 transition-all duration-200">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <LanguageIcon language={language.name} size={16} />
-                    <span className="font-medium text-sm truncate">
-                      {language.displayName}
-                    </span>
-                    <Badge variant="outline" className="text-xs ml-auto">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex-shrink-0">
+                      <LanguageIcon 
+                        language={language.name} 
+                        size={18} 
+                        className={`text-[${language.color}]`}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="font-medium text-sm truncate block">
+                        {language.displayName}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary">
                       #{language.rank}
                     </Badge>
                   </div>
-                  <div className="text-right text-sm ml-3">
-                    <div className="font-medium">{formatTime(language.minutes)}</div>
+                  <div className="text-right text-sm ml-3 flex-shrink-0">
+                    <div className="font-semibold">{formatTime(language.minutes)}</div>
                     <div className="text-xs text-muted-foreground">
                       {language.percentage.toFixed(1)}%
                     </div>
                   </div>
                 </div>
-                <Progress value={language.percentage} className="h-1" />
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Progress</span>
+                    <span>{language.percentage.toFixed(1)}%</span>
+                  </div>
+                  <Progress 
+                    value={language.percentage} 
+                    className="h-2"
+                    indicatorClassName="transition-all duration-200"
+                    style={{
+                      background: `color-mix(in oklch, ${language.color}, transparent 85%)`,
+                      '--indicator-color': language.color
+                    } as CustomProgressStyle}
+                  />
+                </div>
               </div>
             ))}
-          </div>
+          </ScrollArea>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
             <Code2 className="h-8 w-8 mx-auto mb-3 opacity-50" />

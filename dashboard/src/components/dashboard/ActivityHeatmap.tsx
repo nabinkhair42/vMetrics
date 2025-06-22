@@ -44,11 +44,11 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
 
   const getIntensityColor = (intensity: number): string => {
     const colors = [
-      "bg-gray-100 dark:bg-gray-800", // No activity
-      "bg-green-200 dark:bg-green-900", // Low activity
-      "bg-green-300 dark:bg-green-700", // Medium-low activity
-      "bg-green-500 dark:bg-green-600", // Medium-high activity
-      "bg-green-700 dark:bg-green-500", // High activity
+      "bg-muted/30 border-border/50", // No activity
+      "bg-primary/20 border-primary/30", // Low activity
+      "bg-primary/40 border-primary/50", // Medium-low activity
+      "bg-primary/60 border-primary/70", // Medium-high activity
+      "bg-primary border-primary", // High activity
     ]
     return colors[intensity] || colors[0]
   }
@@ -101,35 +101,35 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
   }
 
   return (
-    <Card className={`${className} flex flex-col  border border-border`}>
+    <Card className={`${className} flex flex-col border border-border/50 bg-card/50 backdrop-blur-sm`}>
       <CardHeader className="pb-4 sm:pb-6">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-semibold">
           <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
           Activity Heatmap
         </CardTitle>
-        <CardDescription className="text-sm sm:text-base">
+        <CardDescription className="text-sm sm:text-base text-muted-foreground">
           Your coding activity over the past {weeks} weeks
         </CardDescription>
 
         {/* Summary Stats */}
         {data.length > 0 && (
-          <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Total: <span className="font-medium text-foreground">{formatTotalTime(totalMinutes)}</span>
+          <div className="flex flex-wrap gap-3 sm:gap-4 pt-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-xs sm:text-sm font-medium">
+                Total: <span className="text-primary">{formatTotalTime(totalMinutes)}</span>
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-300" />
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Sessions: <span className="font-medium text-foreground">{totalSessions}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20">
+              <div className="w-2 h-2 rounded-full bg-secondary" />
+              <span className="text-xs sm:text-sm font-medium">
+                Sessions: <span className="text-secondary-foreground">{totalSessions}</span>
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-green-600" />
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Active Days: <span className="font-medium text-foreground">{activeDays}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
+              <Calendar className="h-3 w-3 text-accent-foreground" />
+              <span className="text-xs sm:text-sm font-medium">
+                Active Days: <span className="text-accent-foreground">{activeDays}</span>
               </span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
 
       <CardContent className="flex-1 p-4 sm:p-6 pt-0">
         <TooltipProvider>
-          <div className="space-y-2 sm:space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Month labels */}
             <div className="flex text-xs text-muted-foreground pl-8 relative h-5">
               {visibleMonths.map(({ month, position }) => (
@@ -174,10 +174,10 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
                           <TooltipTrigger asChild>
                             <div
                               className={`
-                                w-3 h-3 sm:w-4 sm:h-4 rounded-sm border border-gray-200 dark:border-gray-700 cursor-pointer
-                                hover:ring-2 hover:ring-blue-500 hover:ring-opacity-50 transition-all
+                                w-3 h-3 sm:w-4 sm:h-4 rounded-sm border cursor-pointer
+                                hover:ring-2 hover:ring-primary/50 hover:scale-110 transition-all duration-200
                                 ${getIntensityColor(intensity)}
-                                ${isToday(date) ? "ring-2 ring-blue-500" : ""}
+                                ${isToday(date) ? "ring-2 ring-primary shadow-sm" : ""}
                               `}
                               aria-label={formatTooltip(date)}
                             />
@@ -194,15 +194,14 @@ export function ActivityHeatmap({ data, weeks = 12, className }: ActivityHeatmap
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
               <span>Less</span>
               <div className="flex gap-1">
                 {[0, 1, 2, 3, 4].map((intensity) => (
                   <div
                     key={intensity}
-                    className={`w-3 h-3 sm:w-4 sm:h-4 rounded-sm border border-gray-200 dark:border-gray-700 ${getIntensityColor(
-                      intensity,
-                    )}`}
+                    className={`w-3 h-3 sm:w-4 sm:h-4 rounded-sm border ${getIntensityColor(intensity)}`}
+                    title={`Level ${intensity}`}
                   />
                 ))}
               </div>

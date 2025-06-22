@@ -2,6 +2,8 @@ import { activityAPI } from '@/lib/api';
 import type { ActivityEvent, ChartDataPoint, DashboardSummary, LanguageChartData, ProjectChartData, UserStats } from '@/lib/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { getLanguageIcon } from '@/lib/language-icons';
+import { getProjectColor } from '@/lib/utils';
 
 // API Response types
 interface ApiLanguage {
@@ -79,18 +81,21 @@ export const useDashboardStore = create<DashboardStore>()(
             label: new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
           })) || [];
 
-          const languageStats = dashboardData.languages.map((lang: ApiLanguage, index: number) => ({
-            name: lang.name,
-            minutes: lang.minutes,
-            percentage: lang.percentage,
-            color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
-          }));
+          const languageStats = dashboardData.languages.map((lang: ApiLanguage) => {
+            const languageInfo = getLanguageIcon(lang.name);
+            return {
+              name: lang.name,
+              minutes: lang.minutes,
+              percentage: lang.percentage,
+              color: languageInfo.color,
+            };
+          });
 
           const projectStats = dashboardData.projects.map((project: ApiProject, index: number) => ({
             name: project.name || 'Unknown',
             timeSpent: project.minutes,
             percentage: project.percentage,
-            color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
+            color: getProjectColor(index),
           }));
 
           // Create comprehensive UserStats object
@@ -175,7 +180,7 @@ export const useDashboardStore = create<DashboardStore>()(
               name: project._id || 'Unknown',
               timeSpent: Math.round(project.totalMinutes || 0),
               percentage: 0,
-              color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
+              color: getProjectColor(index),
             }));
 
             const totalProjectTime = transformedProjects.reduce((sum: number, p: ProjectChartData) => sum + p.timeSpent, 0);
@@ -183,12 +188,15 @@ export const useDashboardStore = create<DashboardStore>()(
               project.percentage = totalProjectTime > 0 ? Math.round((project.timeSpent / totalProjectTime) * 100) : 0;
             });
 
-            const transformedLanguages = languagesData.map((lang: LegacyLanguage, index: number) => ({
-              name: lang.name,
-              minutes: Math.round(lang.minutes || 0),
-              percentage: Math.round(lang.percentage || 0),
-              color: `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
-            }));
+            const transformedLanguages = languagesData.map((lang: LegacyLanguage) => {
+              const languageInfo = getLanguageIcon(lang.name);
+              return {
+                name: lang.name,
+                minutes: Math.round(lang.minutes || 0),
+                percentage: Math.round(lang.percentage || 0),
+                color: languageInfo.color,
+              };
+            });
 
             set({
               userStats: userStatsData,

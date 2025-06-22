@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Activity, FileText, Save, Play, Square, Clock, FolderOpen } from "lucide-react"
 import { useRecentActivity } from "@/store"
 
@@ -97,7 +98,7 @@ export function RecentActivity({ className }: RecentActivityProps) {
       const mins = activity.duration % 60
       const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
       return (
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary">
           {timeStr}
         </Badge>
       )
@@ -108,38 +109,37 @@ export function RecentActivity({ className }: RecentActivityProps) {
   const recentSessions = activities.filter((a) => a.type === "session_end").length
   const recentFiles = activities.filter((a) => a.type === "file_save").length
 
-  console.log("Recent activities:", activities)
   return (
-    <Card className={`${className} flex flex-col border border-border`}>
+    <Card className={`${className} flex flex-col border border-border/50 bg-card/50 backdrop-blur-sm`}>
       <CardHeader className="pb-4 sm:pb-6">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-semibold">
           <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
           Recent Activity
         </CardTitle>
-        <CardDescription className="text-sm sm:text-base">Your latest coding activities and sessions</CardDescription>
+        <CardDescription className="text-sm sm:text-base text-muted-foreground">Your latest coding activities and sessions</CardDescription>
 
         {/* Summary Stats */}
         {activities.length > 0 && (
-          <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-primary/60" />
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                Activities: <span className="font-medium text-foreground">{activities.length}</span>
+          <div className="flex flex-wrap gap-3 sm:gap-4 pt-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <span className="text-xs sm:text-sm font-medium">
+                Activities: <span className="text-primary">{activities.length}</span>
               </span>
             </div>
             {recentSessions > 0 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/20">
                 <Play className="h-3 w-3 text-emerald-500" />
-                <span className="text-xs sm:text-sm text-muted-foreground">
-                  Sessions: <span className="font-medium text-foreground">{recentSessions}</span>
+                <span className="text-xs sm:text-sm font-medium">
+                  Sessions: <span className="text-emerald-600">{recentSessions}</span>
                 </span>
               </div>
             )}
             {recentFiles > 0 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
                 <Save className="h-3 w-3 text-green-500" />
-                <span className="text-xs sm:text-sm text-muted-foreground">
-                  Files: <span className="font-medium text-foreground">{recentFiles}</span>
+                <span className="text-xs sm:text-sm font-medium">
+                  Files: <span className="text-green-600">{recentFiles}</span>
                 </span>
               </div>
             )}
@@ -149,29 +149,31 @@ export function RecentActivity({ className }: RecentActivityProps) {
 
       <CardContent className="flex-1 p-4 sm:p-6 pt-0">
         {activities.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4 max-h-64 sm:max-h-80 overflow-y-auto">
-            {activities.map((activity, index) => (
-              <div
-                key={`activity-${activity.timestamp}-${activity.type}-${index}`}
-                className="flex items-start gap-3 p-2 sm:p-3 rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex-shrink-0 mt-0.5">{getActivityIcon(activity.type)}</div>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm sm:text-base font-medium truncate">{getActivityText(activity)}</p>
-                    {getActivityBadge(activity)}
+          <ScrollArea className="h-[300px] sm:h-[400px] pr-4">
+            <div className="space-y-3">
+              {activities.map((activity, index) => (
+                <div
+                  key={`activity-${activity.timestamp}-${activity.type}-${index}`}
+                  className="flex items-start gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background/80 transition-all duration-200"
+                >
+                  <div className="flex-shrink-0 mt-0.5">{getActivityIcon(activity.type)}</div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium truncate">{getActivityText(activity)}</p>
+                      {getActivityBadge(activity)}
+                    </div>
+                    {activity.project && (
+                      <p className="text-xs text-muted-foreground truncate">in {activity.project}</p>
+                    )}
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>{formatTime(activity.timestamp)}</span>
+                    </div>
                   </div>
-                  {activity.project && (
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">in {activity.project}</p>
-                  )}
                 </div>
-                <div className="flex-shrink-0 flex items-center gap-1">
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs sm:text-sm text-muted-foreground">{formatTime(activity.timestamp)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
         ) : (
           <div className="text-center py-8 sm:py-12 text-muted-foreground">
             <Activity className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />

@@ -115,6 +115,7 @@ export interface ChartDataPoint {
   date: string;
   value: number;
   label?: string;
+  color?: string;
 }
 
 export interface LanguageChartData {

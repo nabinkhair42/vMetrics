@@ -70,7 +70,7 @@ export class ProductivityTracker {
     }
     
     this.statusBarItem.show();
-    console.log('✅ Status bar item is now visible');
+    console.log('Status bar item is now visible');
   }
 
   private async showWelcomeMessageIfFirstTime(): Promise<void> {
@@ -78,7 +78,7 @@ export class ProductivityTracker {
     
     if (!hasShownWelcome) {
       const action = await vscode.window.showInformationMessage(
-        '🎯 Welcome to Productivity Tracker! Track your coding activity and improve your productivity.',
+        'Welcome to Productivity Tracker! Track your coding activity and improve your productivity.',
         'Get Started',
         'View Dashboard',
         'Later'
@@ -87,7 +87,7 @@ export class ProductivityTracker {
       if (action === 'Get Started') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np'));
       }
       
       this.context.globalState.update('hasShownWelcome', true);
@@ -285,12 +285,11 @@ export class ProductivityTracker {
 
       // Only sync if there's meaningful data (at least 1 minute or activity)
       if (sessionData.summary.totalMinutes < 1 && sessionData.activitiesCount === 0) {
-        console.log('⏭️ Skipping sync - no meaningful activity data');
         return;
       }
 
       // Send to new session endpoint
-      console.log('🚀 Sending session data to server:', {
+      console.log('Sending session data to server:', {
         sessionId: sessionData.sessionId,
         duration: Math.round(sessionData.duration / 1000) + 's',
         totalMinutes: sessionData.summary.totalMinutes,
@@ -309,15 +308,15 @@ export class ProductivityTracker {
         this.localSession = undefined;
       }
     } catch (error: any) {
-      console.error('❌ Failed to sync session data:', error);
+      console.error('Failed to sync session data:', error);
       
       // Show user-friendly error for specific cases
       if (error.message?.includes('timeout')) {
-        console.log('⏳ Server timeout - will retry on next sync');
+        console.log('Server timeout - will retry on next sync');
       } else if (error.message?.includes('Network')) {
-        console.log('🌐 Network error - will retry when connection is restored');
+        console.log('Network error - will retry when connection is restored');
       } else {
-        console.log('💾 Unknown error - keeping data in buffer for retry');
+        console.log('Unknown error - keeping data in buffer for retry');
       }
       
       // Keep data in buffer for retry (don't clear activities)
@@ -365,7 +364,7 @@ export class ProductivityTracker {
     const syncIntervalSeconds = parseInt(process.env.PRODUCTIVITY_SYNC_INTERVAL || '') || 
                                Math.round(this.SYNC_INTERVAL / 1000);
     
-    console.log(`🔧 Configuration loaded:`, {
+    console.log(`Configuration loaded:`, {
       serverUrl,
       idleTimeout: `${idleTimeoutMinutes}m`,
       syncInterval: `${syncIntervalSeconds}s`,
@@ -398,19 +397,19 @@ export class ProductivityTracker {
       // Show quick stats in status bar or request detailed stats
       const action = await vscode.window.showQuickPick([
         {
-          label: '📊 View Dashboard',
+          label: 'View Dashboard',
           description: 'Open productivity dashboard in browser'
         },
         {
-          label: '📈 Quick Stats',
+          label: 'Quick Stats',
           description: 'Show today\'s stats in notification'
         },
         {
-          label: '⚙️ Settings',
+          label: 'Settings',
           description: 'Configure tracking preferences'
         },
         {
-          label: '🚪 Logout',
+          label: 'Logout',
           description: 'Stop tracking and logout'
         }
       ], {
@@ -419,16 +418,16 @@ export class ProductivityTracker {
 
       if (action) {
         switch (action.label) {
-          case '📊 View Dashboard':
-            vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app/dashboard'));
+          case 'View Dashboard':
+            vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np/dashboard'));
             break;
-          case '📈 Quick Stats':
+          case 'Quick Stats':
             this.httpClient.requestStats();
             break;
-          case '⚙️ Settings':
+            case 'Settings':
             vscode.commands.executeCommand('workbench.action.openSettings', 'productivityTracker');
             break;
-          case '🚪 Logout':
+          case 'Logout':
             await this.logout();
             break;
         }
@@ -445,13 +444,13 @@ export class ProductivityTracker {
       if (action === 'Login') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('https://vstatus-two.vercel.app'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np'));
       }
     }
   }
 
   async openDashboard(): Promise<void> {
-    const dashboardUrl = 'https://vstatus-two.vercel.app/dashboard';
+    const dashboardUrl = 'https://vstatus.nabinkhair.com.np/dashboard';
     vscode.env.openExternal(vscode.Uri.parse(dashboardUrl));
     
     if (!this.currentSession) {
@@ -490,7 +489,7 @@ export class ProductivityTracker {
 
 // Extension activation
 export function activate(context: vscode.ExtensionContext) {
-  console.log('🚀 Productivity Tracker extension is now active');
+  console.log('Productivity Tracker extension is now active');
   
   try {
     const tracker = new ProductivityTracker(context);
@@ -547,17 +546,17 @@ export function activate(context: vscode.ExtensionContext) {
     commands.forEach(cmd => context.subscriptions.push(cmd));
     context.subscriptions.push(tracker);
     
-    console.log('✅ All commands registered successfully');
+    console.log('All commands registered successfully');
     
     // Show a confirmation that the extension loaded
     vscode.window.showInformationMessage('Productivity Tracker extension loaded successfully!');
     
   } catch (error) {
-    console.error('❌ Extension activation failed:', error);
+    console.error('Extension activation failed:', error);
     vscode.window.showErrorMessage(`Productivity Tracker failed to activate: ${error}`);
   }
 }
 
 export function deactivate() {
-  console.log('🛑 Productivity Tracker extension is now deactivated');
+  console.log('Productivity Tracker extension is now deactivated');
 }

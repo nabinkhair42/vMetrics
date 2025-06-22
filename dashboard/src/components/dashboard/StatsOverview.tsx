@@ -30,8 +30,8 @@ interface StatCardProps {
 
 function StatCard({ title, value, description, icon, trend, className }: StatCardProps) {
   return (
-    <Card className={`${className}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className={`${className} border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all duration-200 hover:shadow-sm`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
@@ -41,7 +41,7 @@ function StatCard({ title, value, description, icon, trend, className }: StatCar
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-1">
+        <div className="space-y-2">
           <div className="text-2xl font-bold tracking-tight">
             {value}
           </div>
@@ -52,11 +52,11 @@ function StatCard({ title, value, description, icon, trend, className }: StatCar
           {trend && (
             <div className="flex items-center text-xs text-muted-foreground pt-1">
               {trend.isPositive ? (
-                <TrendingUp className="h-3 w-3 mr-1" />
+                <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
               ) : (
-                <TrendingDown className="h-3 w-3 mr-1" />
+                <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
               )}
-              <span>
+              <span className={trend.isPositive ? "text-green-600" : "text-red-600"}>
                 {trend.isPositive ? '+' : ''}{trend.value.toFixed(1)}% from yesterday
               </span>
             </div>
@@ -72,7 +72,7 @@ function StatsSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={`stat-${i}`} className="border-0 ">
+          <Card key={`stat-${i}`} className="border border-border/50 bg-card/50">
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-20" />
             </CardHeader>
@@ -86,7 +86,7 @@ function StatsSkeleton() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[...Array(2)].map((_, i) => (
-          <Card key={`section-${i}`} className="border-0 ">
+          <Card key={`section-${i}`} className="border border-border/50 bg-card/50">
             <CardHeader>
               <Skeleton className="h-5 w-32" />
             </CardHeader>
@@ -185,7 +185,7 @@ export function EnhancedStatsOverview() {
       {/* Detailed Analytics */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Session Analytics */}
-        <Card className="border-0 ">
+        <Card className="border border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Activity className="h-4 w-4 text-muted-foreground" />
@@ -195,15 +195,15 @@ export function EnhancedStatsOverview() {
           
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <div className="text-xl font-bold mb-1">
+              <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
+                <div className="text-xl font-bold mb-1 text-primary">
                   {userStats.totalSessions}
                 </div>
                 <div className="text-xs text-muted-foreground">Total Sessions</div>
               </div>
               
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <div className="text-xl font-bold mb-1">
+              <div className="text-center p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                <div className="text-xl font-bold mb-1 text-secondary-foreground">
                   {formatTime(userStats.averageSessionTime)}
                 </div>
                 <div className="text-xs text-muted-foreground">Avg Session</div>
@@ -236,7 +236,7 @@ export function EnhancedStatsOverview() {
         </Card>
 
         {/* Development Stats */}
-        <Card className="border-0 ">
+        <Card className="border border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base font-medium">
               <Code className="h-4 w-4 text-muted-foreground" />
@@ -246,14 +246,14 @@ export function EnhancedStatsOverview() {
           
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 rounded-lg bg-muted/30">
-                <div className="text-xl font-bold mb-1">
+              <div className="text-center p-3 rounded-lg bg-accent/10 border border-accent/20">
+                <div className="text-xl font-bold mb-1 text-accent-foreground">
                   {summary.todayProjects}
                 </div>
                 <div className="text-xs text-muted-foreground">Active Projects</div>
               </div>
               
-              <div className="text-center p-3 rounded-lg bg-muted/30">
+              <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
                 <div className="text-xl font-bold mb-1">
                   {formatTime(userStats.totalCodingTime)}
                 </div>

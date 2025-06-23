@@ -81,8 +81,7 @@ build/
 yarn.lock
 pnpm-lock.yaml
 
-# VSCode extension specific
-*.vsix
+
 
 # Database files
 *.db

@@ -39,3 +39,6 @@ temp/
 # IDE
 .vscode/
 .idea/
+
+# VSCode extension specific
+*.vsix

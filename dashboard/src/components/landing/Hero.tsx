@@ -6,6 +6,10 @@ import { Logo } from "@/components/ui/logo";
 import { useRouter } from "next/navigation";
 
 
+const downloadExtension = () => {
+  window.open('/v0.0.2.vsix', '_blank');
+}
+
 
 export function Hero() {
     const router = useRouter();
@@ -68,6 +72,7 @@ export function Hero() {
             size="lg"
             variant="default"
             className="h-12 px-6"
+            onClick={downloadExtension}
           >
             <VscVscode className="h-6 w-6 text-[#007acc]" />
             Download Extension

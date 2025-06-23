@@ -5,10 +5,13 @@ import { VscVscode } from "react-icons/vsc";
 import { Logo } from "@/components/ui/logo";
 import { useRouter } from "next/navigation";
 
+
+
 export function Hero() {
     const router = useRouter();
   return (
-    <div className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* Base gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-800 via-violet-900 to-purple-800" />
 
       <div 
@@ -21,32 +24,28 @@ export function Hero() {
         }}
       />
 
-      {/* Noise texture */}
+      {/* Enhanced noise texture */}
       <div 
-        className="absolute inset-0 opacity-[0.65] mix-blend-overlay"
+        className="absolute inset-0 mix-blend-overlay opacity-75"
         style={{
-          backgroundImage: `url(/noise.png)`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           backgroundRepeat: 'repeat',
-          backgroundSize: '80px 80px',
+          backgroundSize: '100px 100px'
         }}
       />
 
-      {/* Grain overlay */}
+      {/* Additional fine grain overlay */}
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 mix-blend-overlay opacity-50"
         style={{
-          background: `
-            repeating-conic-gradient(#080808 0% 0.000001%, transparent 0% 0.0625%),
-            repeating-conic-gradient(#080808 0% 0.000001%, transparent 0% 0.0625%)
-          `,
-          backgroundSize: '30px 30px',
-          opacity: 0.35,
-          mixBlendMode: 'color-burn',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '60px 60px'
         }}
       />
       
       {/* Content */}
-      <div className="relative z-10 container px-4 mx-auto text-center">
+      <div className="relative z-10 container px-4 mx-auto text-center mt-32">
         <div className="mb-8 inline-block">
           <div className="relative">
             <div className="absolute inset-0 blur-3xl bg-white/20 rounded-full transform -rotate-6" />
@@ -78,16 +77,21 @@ export function Hero() {
             size="lg"
             variant="outline"
             className="h-12"
-            onClick={
-                () => router.push('/dashboard')
-            }
+            onClick={() => router.push('/dashboard')}
           >
             <Logo width={40} height={40} />
             Get Started
           </Button>
         </div>
       </div>
+      <div>
 
+        <img src ='/overview-dark.png' className="absolute rounded-t-2xl -bottom-20 rotate-12 h-96 -right-64 " />
+        <img src ='/projects-dark.png' className="absolute rounded-t-2xl -bottom-40 rotate-12 h-96 -right-32 " />
+
+      </div>
+
+      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent" />
     </div>
   );

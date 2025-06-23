@@ -92,27 +92,37 @@ export class ActivityTracker {
   }
 
   private extractFileInfo(document: vscode.TextDocument) {
-    const filePath = document.uri.fsPath;
-    const fileName = path.basename(filePath);
-    const fileExtension = path.extname(fileName).slice(1);
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-    const workspaceName = workspaceFolder?.name;
-    const workspacePath = workspaceFolder?.uri.fsPath;
-    const relativePath = workspaceFolder ? 
-      path.relative(workspaceFolder.uri.fsPath, filePath) : filePath;
-    const rootFolder = workspaceName;
+    try {
+      const filePath = document.uri.fsPath;
+      const fileName = path.basename(filePath);
+      const fileExtension = path.extname(fileName).slice(1);
+      const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+      const workspaceName = workspaceFolder?.name;
+      const workspacePath = workspaceFolder?.uri.fsPath;
+      const relativePath = workspaceFolder ? 
+        path.relative(workspaceFolder.uri.fsPath, filePath) : filePath;
+      const rootFolder = workspaceName;
 
-    return {
-      file: filePath,
-      fileName,
-      fileExtension,
-      language: document.languageId,
-      relativePath,
-      project: this.currentProject || workspaceName,
-      workspaceName,
-      workspacePath,
-      rootFolder
-    };
+      return {
+        file: filePath,
+        fileName,
+        fileExtension,
+        language: document.languageId,
+        relativePath,
+        project: this.currentProject || workspaceName,
+        workspaceName,
+        workspacePath,
+        rootFolder
+      };
+    } catch (error) {
+      console.error('Error extracting file info:', error);
+      // Return minimal info to prevent crashes
+      return {
+        file: document.uri.fsPath,
+        fileName: path.basename(document.uri.fsPath),
+        language: document.languageId
+      };
+    }
   }
 
   private createBaseEvent(type: ActivityEvent['type'], additionalData: Partial<ActivityEvent> = {}): ActivityEvent {
@@ -160,42 +170,47 @@ export class ActivityTracker {
   }
 
   private handleDocumentChange(event: vscode.TextDocumentChangeEvent): void {
-    if (event.document.uri.scheme !== 'file') {
-      return; // Skip non-file documents
-    }
-
-    this.updateActivity();
-    
-    const fileInfo = this.extractFileInfo(event.document);
-    
-    // Count changes
-    let totalChanges = 0;
-    let linesChanged = new Set<number>();
-    let charactersTyped = 0;
-
-    event.contentChanges.forEach(change => {
-      totalChanges++;
-      
-      // Count lines affected
-      const startLine = change.range.start.line;
-      const endLine = change.range.end.line;
-      for (let i = startLine; i <= endLine; i++) {
-        linesChanged.add(i);
+    try {
+      if (event.document.uri.scheme !== 'file') {
+        return; // Skip non-file documents
       }
+
+      this.updateActivity();
       
-      // Count characters typed (approximate)
-      charactersTyped += change.text.length;
-    });
+      const fileInfo = this.extractFileInfo(event.document);
+      
+      // Count changes
+      let totalChanges = 0;
+      let linesChanged = new Set<number>();
+      let charactersTyped = 0;
 
-    this.textChangeCount += totalChanges;
-    this.linesChangedCount = Math.max(this.linesChangedCount, linesChanged.size);
-    this.charactersTypedCount += charactersTyped;
+      event.contentChanges.forEach(change => {
+        totalChanges++;
+        
+        // Count lines affected
+        const startLine = change.range.start.line;
+        const endLine = change.range.end.line;
+        for (let i = startLine; i <= endLine; i++) {
+          linesChanged.add(i);
+        }
+        
+        // Count characters typed (approximate)
+        charactersTyped += change.text.length;
+      });
 
-    // Emit text change event (debounced)
-    this.debouncedTextChangeEvent(fileInfo, {
-      linesChanged: linesChanged.size,
-      charactersTyped
-    });
+      this.textChangeCount += totalChanges;
+      this.linesChangedCount = Math.max(this.linesChangedCount, linesChanged.size);
+      this.charactersTypedCount += charactersTyped;
+
+      // Emit text change event (debounced)
+      this.debouncedTextChangeEvent(fileInfo, {
+        linesChanged: linesChanged.size,
+        charactersTyped
+      });
+    } catch (error) {
+      console.error('Error handling document change:', error);
+      // Continue tracking but log the error
+    }
   }
 
   private debouncedTextChangeEvent(fileInfo: any, changeData: any): void {
@@ -209,31 +224,48 @@ export class ActivityTracker {
   }
 
   private handleDocumentSave(document: vscode.TextDocument): void {
-    if (document.uri.scheme !== 'file') {
-      return;
-    }
+    try {
+      if (document.uri.scheme !== 'file') {
+        return;
+      }
 
-    this.updateActivity();
-    const fileInfo = this.extractFileInfo(document);
-    this.emitFileSave(fileInfo);
+      this.updateActivity();
+      const fileInfo = this.extractFileInfo(document);
+      this.emitFileSave(fileInfo);
+    } catch (error) {
+      console.error('Error handling document save:', error);
+      // Continue tracking but log the error
+    }
   }
 
   private handleDocumentOpen(document: vscode.TextDocument): void {
-    if (document.uri.scheme !== 'file') {
-      return;
-    }
+    try {
+      if (document.uri.scheme !== 'file') {
+        return;
+      }
 
-    this.updateActivity();
-    // File open is handled by handleActiveEditorChange
+      this.updateActivity();
+      // File open is handled by handleActiveEditorChange
+    } catch (error) {
+      console.error('Error handling document open:', error);
+    }
   }
 
   private handleDocumentClose(document: vscode.TextDocument): void {
-    if (document.uri.scheme !== 'file') {
-      return;
-    }
+    try {
+      if (document.uri.scheme !== 'file') {
+        return;
+      }
 
-    if (this.currentFile === document.uri.fsPath) {
-      this.emitFileClose();
+      if (this.currentFile === document.uri.fsPath) {
+        this.emitFileClose();
+        this.currentFile = undefined;
+        this.currentLanguage = undefined;
+        this.fileStartTime = undefined;
+      }
+    } catch (error) {
+      console.error('Error handling document close:', error);
+      // Reset state even if error occurs
       this.currentFile = undefined;
       this.currentLanguage = undefined;
       this.fileStartTime = undefined;

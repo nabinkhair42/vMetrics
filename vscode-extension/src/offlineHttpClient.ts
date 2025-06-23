@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ActivityEvent, UserSession, Config } from './types';
 
-export class HttpClient {
+export class OfflineHttpClient {
   private reconnectTimeout: NodeJS.Timeout | undefined;
   private readonly eventQueue: ActivityEvent[] = [];
   private isConnected = false;
@@ -94,6 +94,37 @@ export class HttpClient {
     }
   }
 
+  private async testServerConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const url = new URL(this.config.serverUrl + '/health');
+      const requestModule = url.protocol === 'https:' ? https : http;
+      
+      const req = requestModule.get(url, (res) => {
+        resolve(res.statusCode === 200);
+      });
+      
+      req.on('error', () => resolve(false));
+      req.setTimeout(5000, () => {
+        req.destroy();
+        resolve(false);
+      });
+    });
+  }
+
+  private startPolling(): void {
+    // Poll server every 30 seconds to maintain connection
+    this.pollInterval = setInterval(async () => {
+      const isReachable = await this.testServerConnection();
+      if (!isReachable && this.isConnected) {
+        this.isConnected = false;
+        this.updateStatusBar('Working offline');
+        this.scheduleReconnect();
+      } else if (isReachable && !this.isConnected) {
+        await this.connect(); // Attempt to reconnect and sync
+      }
+    }, 30000);
+  }
+
   sendEvent(event: ActivityEvent): void {
     if (this.isConnected && !this.syncInProgress) {
       this.sendEventToServer(event).catch(error => {
@@ -117,91 +148,6 @@ export class HttpClient {
         this.saveOfflineEvents();
       }
     }
-  }
-
-  private async flushEventQueue(): Promise<void> {
-    if (this.eventQueue.length === 0 || this.syncInProgress) {
-      return;
-    }
-
-    this.syncInProgress = true;
-    const total = this.eventQueue.length;
-    let processed = 0;
-
-    try {
-      while (this.eventQueue.length > 0 && this.isConnected) {
-        const batch = this.eventQueue.slice(0, 10); // Process in batches of 10
-        
-        await Promise.all(
-          batch.map(event => this.sendEventToServer(event))
-        );
-        
-        this.eventQueue.splice(0, batch.length);
-        await this.saveOfflineEvents();
-        
-        processed += batch.length;
-        this.updateStatusBar(`Syncing events: ${processed}/${total}`);
-      }
-      
-      if (this.eventQueue.length === 0) {
-        this.statusBarItem.hide();
-      } else {
-        this.updateStatusBar(`${this.eventQueue.length} events pending sync`);
-      }
-    } catch (error) {
-      console.error('Error during sync:', error);
-      this.updateStatusBar(`Sync failed - ${this.eventQueue.length} events pending`);
-    } finally {
-      this.syncInProgress = false;
-    }
-  }
-
-  disconnect(): void {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-      this.pollInterval = undefined;
-    }
-    
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = undefined;
-    }
-    
-    this.isConnected = false;
-    this.statusBarItem.hide();
-    
-    // Save any remaining events before disconnecting
-    if (this.eventQueue.length > 0) {
-      this.saveOfflineEvents();
-    }
-  }
-
-  private async testServerConnection(): Promise<boolean> {
-    return new Promise((resolve) => {
-      const url = new URL(this.config.serverUrl + '/health');
-      const requestModule = url.protocol === 'https:' ? https : http;
-      
-      const req = requestModule.get(url, (res) => {
-        resolve(res.statusCode === 200);
-      });
-      
-      req.on('error', () => resolve(false));
-      req.setTimeout(5000, () => {
-        req.destroy();
-        resolve(false);
-      });
-    });
-  }
-
-  private startPolling(): void {
-    // Poll server every 30 seconds to maintain connection
-    this.pollInterval = setInterval(async () => {
-      const isReachable = await this.testServerConnection();
-      if (!isReachable) {
-        this.isConnected = false;
-        this.scheduleReconnect();
-      }
-    }, 30000);
   }
 
   private async sendEventToServer(event: ActivityEvent): Promise<void> {
@@ -242,9 +188,45 @@ export class HttpClient {
     });
   }
 
+  private async flushEventQueue(): Promise<void> {
+    if (this.eventQueue.length === 0 || this.syncInProgress) {
+      return;
+    }
+
+    this.syncInProgress = true;
+    const total = this.eventQueue.length;
+    let processed = 0;
+
+    try {
+      while (this.eventQueue.length > 0 && this.isConnected) {
+        const batch = this.eventQueue.slice(0, 10); // Process in batches of 10
+        
+        await Promise.all(
+          batch.map(event => this.sendEventToServer(event))
+        );
+        
+        this.eventQueue.splice(0, batch.length);
+        await this.saveOfflineEvents();
+        
+        processed += batch.length;
+        this.updateStatusBar(`Syncing events: ${processed}/${total}`);
+      }
+      
+      if (this.eventQueue.length === 0) {
+        this.statusBarItem.hide();
+      } else {
+        this.updateStatusBar(`${this.eventQueue.length} events pending sync`);
+      }
+    } catch (error) {
+      console.error('Error during sync:', error);
+      this.updateStatusBar(`Sync failed - ${this.eventQueue.length} events pending`);
+    } finally {
+      this.syncInProgress = false;
+    }
+  }
+
   private scheduleReconnect(): void {
     if (this.retryCount >= this.maxRetries) {
-      vscode.window.showErrorMessage('Failed to connect to Productivity Tracker server after multiple attempts');
       this.updateStatusBar('Working offline - sync paused');
       return;
     }
@@ -270,10 +252,10 @@ export class HttpClient {
         const stats = await this.getStatsFromServer();
         this.showStats(stats);
       } catch (error) {
-        vscode.window.showWarningMessage('Failed to get stats from server');
+        vscode.window.showWarningMessage('Failed to get stats from server - working offline');
       }
     } else {
-      vscode.window.showWarningMessage('Not connected to server');
+      vscode.window.showWarningMessage('Currently working offline - stats not available');
     }
   }
 
@@ -319,12 +301,22 @@ export class HttpClient {
   }
 
   private showStats(stats: any): void {
-    const { todayMinutes, currentFile, activeProjects } = stats;
-    const hours = Math.floor(todayMinutes / 60);
-    const minutes = todayMinutes % 60;
+    // Implementation depends on your stats display logic
+  }
+
+  disconnect(): void {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = undefined;
+    }
     
-    const message = `Today: ${hours}h ${minutes}m coding time. Current file: ${currentFile || 'None'}`;
-    vscode.window.showInformationMessage(message);
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = undefined;
+    }
+    
+    this.isConnected = false;
+    this.statusBarItem.hide();
   }
 
   public isConnectedToServer(): boolean {
@@ -332,79 +324,100 @@ export class HttpClient {
   }
 
   async sendSessionData(sessionData: any): Promise<void> {
-    if (!this.isConnected) {
-      throw new Error('Not connected to server');
-    }
+    if (this.isConnected) {
+      return new Promise((resolve, reject) => {
+        const url = new URL(this.config.serverUrl + '/api/activity/session');
+        const requestModule = url.protocol === 'https:' ? https : http;
+        
+        const postData = JSON.stringify(sessionData);
+        
+        const options = {
+          hostname: url.hostname,
+          port: url.port || (url.protocol === 'https:' ? 443 : 80),
+          path: url.pathname,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData),
+            'Authorization': `Bearer ${this.session.token}`
+          }
+        };
 
-    return this.makeRequest('/api/activity/session', 'POST', sessionData);
+        const req = requestModule.request(options, (res) => {
+          if (res.statusCode === 200 || res.statusCode === 201) {
+            resolve();
+          } else {
+            reject(new Error(`HTTP ${res.statusCode}`));
+          }
+        });
+
+        req.on('error', reject);
+        req.setTimeout(30000, () => { // Longer timeout for session data
+          req.destroy();
+          reject(new Error('Request timeout'));
+        });
+
+        req.write(postData);
+        req.end();
+      });
+    } else {
+      // Queue session data for later sync
+      this.eventQueue.push({
+        type: 'session_data',
+        data: sessionData,
+        timestamp: Date.now()
+      } as any);
+      await this.saveOfflineEvents();
+      this.updateStatusBar(`${this.eventQueue.length} events pending sync (offline)`);
+    }
   }
 
   async sendStatusUpdate(statusData: any): Promise<void> {
-    if (!this.isConnected) {
-      throw new Error('Not connected to server');
-    }
+    if (this.isConnected) {
+      return new Promise((resolve, reject) => {
+        const url = new URL(this.config.serverUrl + '/api/activity/status');
+        const requestModule = url.protocol === 'https:' ? https : http;
+        
+        const postData = JSON.stringify(statusData);
+        
+        const options = {
+          hostname: url.hostname,
+          port: url.port || (url.protocol === 'https:' ? 443 : 80),
+          path: url.pathname,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(postData),
+            'Authorization': `Bearer ${this.session.token}`
+          }
+        };
 
-    return this.makeRequest('/api/activity/status', 'POST', statusData);
-  }
-
-  async getDashboardData(timeRange: string = 'today'): Promise<any> {
-    if (!this.isConnected) {
-      throw new Error('Not connected to server');
-    }
-
-    return this.makeRequest(`/api/activity/dashboard/${timeRange}`, 'GET');
-  }
-
-  private async makeRequest(path: string, method: 'GET' | 'POST', data?: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const url = new URL(this.config.serverUrl + path);
-      const requestModule = url.protocol === 'https:' ? https : http;
-      
-      const options = {
-        hostname: url.hostname,
-        port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: url.pathname,
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.session.token}`
-        }
-      };
-
-      const req = requestModule.request(options, (res) => {
-        let responseData = '';
-        res.on('data', chunk => responseData += chunk);
-        res.on('end', () => {
+        const req = requestModule.request(options, (res) => {
           if (res.statusCode === 200 || res.statusCode === 201) {
-            try {
-              resolve(responseData ? JSON.parse(responseData) : {});
-            } catch (error) {
-              console.error('JSON parse error:', error, 'Response:', responseData);
-              reject(new Error('Invalid JSON response'));
-            }
+            resolve();
           } else {
-            console.error(`HTTP ${res.statusCode} response:`, responseData);
-            reject(new Error(`HTTP ${res.statusCode}: ${responseData}`));
+            reject(new Error(`HTTP ${res.statusCode}`));
           }
         });
-      });
 
-      req.on('error', (error) => {
-        console.error('HTTP request error:', error);
-        reject(error);
-      });
-      
-      // Increase timeout to 30 seconds for session data uploads
-      req.setTimeout(30000, () => {
-        req.destroy();
-        reject(new Error('Request timeout (30s)'));
-      });
+        req.on('error', reject);
+        req.setTimeout(10000, () => {
+          req.destroy();
+          reject(new Error('Request timeout'));
+        });
 
-      if (data) {
-        req.write(JSON.stringify(data));
-      }
-      req.end();
-    });
+        req.write(postData);
+        req.end();
+      });
+    } else {
+      // Queue status update for later sync
+      this.eventQueue.push({
+        type: 'status_update',
+        data: statusData,
+        timestamp: Date.now()
+      } as any);
+      await this.saveOfflineEvents();
+      this.updateStatusBar(`${this.eventQueue.length} events pending sync (offline)`);
+    }
   }
-}
-
+} 

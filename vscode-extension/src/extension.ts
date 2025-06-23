@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { AuthService } from './authService';
 import { ActivityTracker } from './activityTracker';
-import { HttpClient } from './httpClient';
+import { OfflineHttpClient } from './offlineHttpClient';
 import { ActivityEvent, UserSession, Config } from './types';
 
 // Local storage interface for smart batching
@@ -24,7 +24,7 @@ interface LocalSession {
 export class ProductivityTracker {
   private authService: AuthService;
   private activityTracker: ActivityTracker | undefined;
-  private httpClient: HttpClient | undefined;
+  private httpClient: OfflineHttpClient | undefined;
   private statusBarItem: vscode.StatusBarItem;
   private currentSession: UserSession | undefined;
   
@@ -87,7 +87,7 @@ export class ProductivityTracker {
       if (action === 'Get Started') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vmetrics.nabinkhair.com.np'));
       }
       
       this.context.globalState.update('hasShownWelcome', true);
@@ -124,8 +124,8 @@ export class ProductivityTracker {
       // Get machine ID
       const machineId = await this.authService.getMachineId();
       
-      // Initialize HTTP client
-      this.httpClient = new HttpClient(config, session);
+      // Initialize HTTP client with offline support
+      this.httpClient = new OfflineHttpClient(config, session, this.context);
       await this.httpClient.connect();
       
       // Initialize activity tracker
@@ -419,7 +419,7 @@ export class ProductivityTracker {
       if (action) {
         switch (action.label) {
           case 'View Dashboard':
-            vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np/dashboard'));
+            vscode.env.openExternal(vscode.Uri.parse('https://vmetrics.nabinkhair.com.np/dashboard'));
             break;
           case 'Quick Stats':
             this.httpClient.requestStats();
@@ -444,13 +444,13 @@ export class ProductivityTracker {
       if (action === 'Login') {
         await this.login();
       } else if (action === 'View Dashboard') {
-        vscode.env.openExternal(vscode.Uri.parse('https://vstatus.nabinkhair.com.np'));
+        vscode.env.openExternal(vscode.Uri.parse('https://vmetrics.nabinkhair.com.np'));
       }
     }
   }
 
   async openDashboard(): Promise<void> {
-    const dashboardUrl = 'https://vstatus.nabinkhair.com.np/dashboard';
+    const dashboardUrl = 'https://vmetrics.nabinkhair.com.np/dashboard';
     vscode.env.openExternal(vscode.Uri.parse(dashboardUrl));
     
     if (!this.currentSession) {

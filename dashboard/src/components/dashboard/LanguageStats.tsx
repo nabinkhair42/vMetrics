@@ -57,7 +57,7 @@ export function LanguageStats({ languages, className }: LanguageStatsProps) {
         {enhancedLanguages.length > 0 ? (
           <ScrollArea className="space-y-4 h-96">
             {enhancedLanguages.map((language) => (
-              <div key={language.name} className="space-y-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-background/80 transition-all duration-200">
+              <div key={language.name} className="space-y-3 p-3 border-l border-r  border-t bg-background/50 hover:bg-background/80 transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="flex-shrink-0">

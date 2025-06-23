@@ -4,24 +4,32 @@ import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Poppins } from "next/font/google";
+import { defaultSEO, getStructuredData } from "@/config/seo-config";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "VSCode Productivity Tracker",
-  description: "Track your coding productivity and digital wellbeing",
-};
+export const metadata: Metadata = defaultSEO;
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = getStructuredData();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body className={poppins.className} suppressHydrationWarning>
         <AuthProvider>
           <ThemeProvider

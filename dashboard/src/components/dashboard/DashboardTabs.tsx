@@ -95,7 +95,7 @@ function LanguagesTab() {
             label: l.name, 
             value: l.minutes
           }))}
-          type="bar"
+          type="area"
           title="Language Time Distribution"
           description="Time spent in each language"
           className="lg:col-span-1"

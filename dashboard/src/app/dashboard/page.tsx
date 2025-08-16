@@ -1,23 +1,8 @@
 'use client';
 
-import Dashboard from '@/components/dashboard/Dashboard';
-import { getBreadcrumbStructuredData } from '@/config/seo-config';
+import { redirect } from 'next/navigation';
 
 export default function DashboardPage() {
-  const breadcrumbData = getBreadcrumbStructuredData([
-    { name: 'Home', url: '/' },
-    { name: 'Dashboard', url: '/dashboard' },
-  ]);
-
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbData),
-        }}
-      />
-      <Dashboard />
-    </>
-  );
+	redirect('/dashboard/overview');
+	return null;
 }

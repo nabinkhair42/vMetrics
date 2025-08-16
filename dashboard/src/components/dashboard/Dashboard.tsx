@@ -1,14 +1,13 @@
 import LoginCard from '@/components/auth/LoginCard';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { DashboardTabs } from '@/components/dashboard/DashboardTabs';
 import { UniversalLoading } from '@/components/UniversalLoading';
 import { authAPI } from '@/lib/api';
 import { useAuthStore, useDashboardStore, useError, useIsLoading, useSelectedTimeRange, useUIStore } from '@/store';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
-export default function Dashboard() {
+export default function Dashboard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   const isLoading = useIsLoading();
   const error = useError();
@@ -86,7 +85,7 @@ export default function Dashboard() {
           onRefresh={handleRefresh}
           isLoading={isLoading}
         />
-        <DashboardTabs />
+        {children}
       </div>
     </div>
   );

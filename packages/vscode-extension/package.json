@@ -1,0 +1,109 @@
+{
+  "name": "vmetrics",
+  "displayName": "vMetrics",
+  "description": "Track your coding productivity with beautiful insights",
+  "version": "1.0.0",
+  "publisher": "vmetrics",
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/vmetrics"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "productivity",
+    "tracking",
+    "time",
+    "metrics",
+    "analytics"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vmetrics.login",
+        "title": "vMetrics: Login with GitHub"
+      },
+      {
+        "command": "vmetrics.logout",
+        "title": "vMetrics: Logout"
+      },
+      {
+        "command": "vmetrics.openDashboard",
+        "title": "vMetrics: Open Dashboard"
+      },
+      {
+        "command": "vmetrics.toggleTracking",
+        "title": "vMetrics: Toggle Tracking"
+      },
+      {
+        "command": "vmetrics.showStats",
+        "title": "vMetrics: Show Today's Stats"
+      }
+    ],
+    "configuration": {
+      "title": "vMetrics",
+      "properties": {
+        "vmetrics.serverUrl": {
+          "type": "string",
+          "default": "https://api.vmetrics.dev",
+          "description": "The vMetrics API server URL"
+        },
+        "vmetrics.dashboardUrl": {
+          "type": "string",
+          "default": "https://vmetrics.dev",
+          "description": "The vMetrics dashboard URL"
+        },
+        "vmetrics.idleTimeoutMinutes": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 30,
+          "description": "Minutes of inactivity before marking as idle"
+        },
+        "vmetrics.syncIntervalSeconds": {
+          "type": "number",
+          "default": 90,
+          "minimum": 30,
+          "maximum": 300,
+          "description": "Seconds between data syncs"
+        },
+        "vmetrics.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show achievement and milestone notifications"
+        },
+        "vmetrics.trackOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start tracking when VS Code opens"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup src/extension.ts --format cjs --external vscode --minify",
+    "dev": "tsup src/extension.ts --format cjs --external vscode --watch",
+    "package": "pnpm run build && vsce package --no-dependencies",
+    "publish": "pnpm run build && vsce publish --no-dependencies",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vmetrics/extension-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}

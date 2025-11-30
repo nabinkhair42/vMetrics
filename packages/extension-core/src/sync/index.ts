@@ -18,7 +18,7 @@ export class SyncService {
   private machineId: string;
   private isOnline: boolean = true;
   private offlineQueue: SerializedSession[] = [];
-  private offlineStorage?: OfflineStorage;
+  private offlineStorage: OfflineStorage | undefined;
 
   constructor(
     config: Pick<TrackerConfig, 'serverUrl'>,
@@ -112,7 +112,7 @@ export class SyncService {
         throw new Error(`Server returned ${response.status}: ${error}`);
       }
 
-      const result = await response.json();
+      const result = await response.json() as { new_achievements?: Array<{ type: string; unlocked_at: string }> };
 
       return {
         success: true,

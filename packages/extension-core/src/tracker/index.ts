@@ -18,12 +18,12 @@ export interface TrackerEvents {
 export class ActivityTracker {
   private adapter: IDEAdapter;
   private session: LocalSession | null = null;
-  private machineId: string;
+  private _machineId: string;
 
   // Tracking state
   private currentFile: FileInfo | null = null;
   private fileStartTime: number = 0;
-  private lastActivityTime: number = Date.now();
+  private _lastActivityTime: number = Date.now();
   private isIdle: boolean = false;
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -51,7 +51,7 @@ export class ActivityTracker {
     events: TrackerEvents
   ) {
     this.adapter = adapter;
-    this.machineId = machineId;
+    this._machineId = machineId;
     this.events = events;
 
     this.idleTimeoutMs = (config.idleTimeoutMinutes || 5) * 60 * 1000;
@@ -256,7 +256,7 @@ export class ActivityTracker {
   }
 
   private resetIdleTimer(): void {
-    this.lastActivityTime = Date.now();
+    this._lastActivityTime = Date.now();
 
     if (this.isIdle) {
       this.isIdle = false;
@@ -309,8 +309,6 @@ export class ActivityTracker {
     if (!this.session) return;
 
     const activity: ActivityEvent = {
-      type: event.type,
-      timestamp: event.timestamp,
       ...event,
     };
 

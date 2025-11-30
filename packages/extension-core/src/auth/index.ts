@@ -50,7 +50,7 @@ export class AuthService {
       throw new Error(`Login failed: ${error}`);
     }
 
-    const { token } = await response.json();
+    const { token } = await response.json() as { token: string };
 
     // Verify and decode the token
     const session = await this.verifyToken(token);
@@ -97,7 +97,9 @@ export class AuthService {
         return null;
       }
 
-      const { user } = await response.json();
+      const { user } = await response.json() as {
+        user: { id: string; username: string; email?: string; avatar_url?: string }
+      };
 
       // Decode token payload
       const payload = this.decodeToken(token);

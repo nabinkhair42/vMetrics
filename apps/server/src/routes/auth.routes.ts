@@ -1,10 +1,10 @@
-import { Router, Request, Response } from 'express';
+import { Router, type IRouter, Request, Response } from 'express';
 import { z } from 'zod';
 import { authService } from '../services/auth.service.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 
-const router = Router();
+const router: IRouter = Router();
 
 // GitHub OAuth - redirect to GitHub
 router.get('/github', (_req: Request, res: Response) => {
@@ -98,4 +98,4 @@ router.post('/logout', authenticateToken, (_req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-export const authRoutes = router;
+export const authRoutes: IRouter = router;

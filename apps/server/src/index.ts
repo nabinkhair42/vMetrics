@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
 import { corsMiddleware } from './config/cors.js';
@@ -8,7 +8,7 @@ import { activityRoutes } from './routes/activity.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { initializeWebSocket } from './websocket/index.js';
 
-const app = express();
+const app: Express = express();
 
 // Security middleware
 app.use(helmet({

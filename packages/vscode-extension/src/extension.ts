@@ -72,8 +72,8 @@ function getConfig(): TrackerConfig & { dashboardUrl: string; showNotifications:
   const vsConfig = vscode.workspace.getConfiguration('vmetrics');
 
   return {
-    serverUrl: vsConfig.get('serverUrl', 'https://api.vmetrics.dev'),
-    dashboardUrl: vsConfig.get('dashboardUrl', 'https://vmetrics.dev'),
+    serverUrl: vsConfig.get('serverUrl', 'http://localhost:3001'),
+    dashboardUrl: vsConfig.get('dashboardUrl', 'http://localhost:3000'),
     idleTimeoutMinutes: vsConfig.get('idleTimeoutMinutes', 5),
     syncIntervalSeconds: vsConfig.get('syncIntervalSeconds', 90),
     maxBatchSize: 30,

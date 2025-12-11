@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router, type IRouter, Request, Response } from 'express';
 import { z } from 'zod';
 import { activityService } from '../services/activity.service.js';
 import { goalService } from '../services/goal.service.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { SessionUpdateRequestSchema, StatusUpdateRequestSchema } from '../types/index.js';
 
-const router = Router();
+const router: IRouter = Router();
 
 // All routes require authentication
 router.use(authenticateToken);
@@ -98,4 +98,4 @@ router.get('/achievements/definitions', async (_req: Request, res: Response) => 
   res.json({ definitions });
 });
 
-export const activityRoutes = router;
+export const activityRoutes: IRouter = router;

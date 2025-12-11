@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
+import { Router, type IRouter, Request, Response } from 'express';
 import { supabase } from '../config/supabase.js';
 
-const router = Router();
+const router: IRouter = Router();
 
 // Health check
 router.get('/health', async (_req: Request, res: Response) => {
@@ -43,4 +43,4 @@ router.get('/', (_req: Request, res: Response) => {
   });
 });
 
-export const healthRoutes = router;
+export const healthRoutes: IRouter = router;
